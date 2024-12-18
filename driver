@@ -46,16 +46,16 @@ def main():
     subprocess.run(["rm", f"{file_prefix}.i" ])
 
     ## Assembling time : )
-    ## result = subprocess.run(["gcc", f"{file_prefix}.s", "-o", file_prefix],
-    ##                         capture_output=True,
-    ##                         text=True)
-    ## if result.returncode != 0:
-    ##     print("Err: Unable to PreProcess",
-    ##           file=sys.stderr)
-    ##     print(result.stderr,
-    ##           file=sys.stderr,
-    ##           end="")
-    ##     return 1;
+    result = subprocess.run(["gcc", f"{file_prefix}.s", "-o", file_prefix],
+                            capture_output=True,
+                            text=True)
+    if result.returncode != 0:
+        print("Err: Unable to PreProcess",
+              file=sys.stderr)
+        print(result.stderr,
+              file=sys.stderr,
+              end="")
+        return 1;
 
     subprocess.run(["rm", f"{file_prefix}.s" ])
 

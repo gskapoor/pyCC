@@ -15,9 +15,9 @@ def main():
     elif (len(args) == 3):
         if args[2] == "--lex":
             mode = 0
-        elif args[2] == "--lex":
+        elif args[2] == "--parse":
             mode = 1
-        elif args[2] == "--lex":
+        elif args[2] == "--codegen":
             mode = 2
         else:
             print(f"Usage: {args[0]} <C file> {{--lex|--parse|--codegen}}", file=sys.stderr)

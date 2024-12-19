@@ -1,4 +1,6 @@
 from enum import Enum, auto
+from typing import List
+
 from lexer import TokenType
 
 class ASTNode:
@@ -69,44 +71,45 @@ class ProgramNode(ASTNode):
    
 class ASM():
     pass
+   
+class RegistersEnum(Enum):
+    RAX = auto()
+    EAX = auto()
+    RBX = auto()
+    EBX = auto()
 
-class ProgramASM(ASM):
-    def __init__(self, function):
-        self.function = function
-    
-class FunctionASM(ASM):
-    def __init__(self, name, instructions):
-        self.name = name
-        self.instructions = instructions
+class OperandASM(ASM):
+    pass
+
+class RegisterASM(OperandASM):
+    def __init__(self, reg: RegistersEnum):
+        self.val = reg
+
+class ImmediateASM(OperandASM):
+    def __init__(self, val):
+        self.val = val
 
 class InstructionASM(ASM):
     pass
 
 class MoveASM(InstructionASM):
     # WE only have move rn
-    def __init__(self, src, dst):
+    def __init__(self, src: OperandASM, dst: OperandASM):
         self.src = src
         self.dst = dst
 
 class ReturnASM(InstructionASM):
     pass
 
-class OperandASM(ASM):
-    pass
+class FunctionASM(ASM):
+    def __init__(self, name: str, instructions: List[InstructionASM]):
+        self.name = name
+        self.instructions = instructions
 
-class ImmediateASM(OperandASM):
-    def __init__(self, val):
-        self.val = val
-
-class RegisterASM(OperandASM):
-    def __init__(self, reg):
-        self.val = reg
-
-class RegistersEnum(Enum):
-    RAX = auto()
-    EAX = auto()
-    RBX = auto()
-    EBX = auto()
+class ProgramASM(ASM):
+    def __init__(self, function: FunctionASM):
+        self.function = function
+ 
 
 class Parser():
     def __init__(self, tokens):

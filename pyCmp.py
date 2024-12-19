@@ -11,12 +11,6 @@ def compile(fileInName, fileOutName, mode):
         parsePut = parser.parse(lexPut)
         asm = asmgen.asmgenerate(parsePut)
         # for now, use this dummy value:
-        asm =  """
-         .globl main
-        main:
-         movl $2, %eax
-         ret
-        """
         with open(fileOutName, "w") as fileOut:
             fileOut.write(asm)
     return True

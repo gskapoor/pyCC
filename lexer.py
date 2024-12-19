@@ -2,8 +2,7 @@ from enum import Enum, auto
 import re
 
 class TokenType(Enum):
-    IDENTIFIER = auto()
-    CONST = auto()
+    CONSTINT = auto()
     INT = auto()
     VOID = auto()
     RETURN = auto()
@@ -12,10 +11,10 @@ class TokenType(Enum):
     BOPEN = auto()
     BCLOSE = auto()
     SEMICOLON = auto()
+    IDENTIFIER = auto()
 
 TokenToRegex = {
-    TokenType.IDENTIFIER : re.compile(r'[a-zA-Z_]\w*\b'), 
-    TokenType.CONST      : re.compile(r'[0-9]+\b'), 
+    TokenType.CONSTINT   : re.compile(r'[0-9]+\b'), 
     TokenType.INT        : re.compile(r'int\b'), 
     TokenType.VOID       : re.compile(r'void\b'), 
     TokenType.RETURN     : re.compile(r'return\b'), 
@@ -24,9 +23,9 @@ TokenToRegex = {
     TokenType.BOPEN      : re.compile(r'\{'), 
     TokenType.BCLOSE     : re.compile(r'\}'), 
     TokenType.SEMICOLON  : re.compile(r';'), 
-
-
+    TokenType.IDENTIFIER : re.compile(r'[a-zA-Z_]\w*\b'), 
 }
+
 class Token:
     def __init__(self, token_type, regexStr):
         self.token_type = token_type

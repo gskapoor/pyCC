@@ -1,54 +1,72 @@
-from tkinter import N
-from regex import P
+from enum import Enum, auto
 from lexer import TokenType
 
 class ASTNode:
     # Base Node Class
     pass
 
-class ProgramNode(ASTNode):
-    def __init__(self, function):
-        self.function = function
-
-    def __repr__(self):
-        return (f"ProgramNode({repr(self.function)})")
-
-class FunctionNode(ASTNode):
-    def __init__(self, identifier, statement):
-        self.identifier = identifier
-        self.statement = statement
-
-    def __repr__(self):
-        return (f"FunctionNode({repr(self.identifier), repr(self.statement)})")
-
 class IdentifierNode(ASTNode):
-    def __init__(self, name):
+    def __init__(self, name: str):
         self.name = name
 
     def __repr__(self):
-        return repr(self.name)
-
-class ReturnNode(ASTNode):
-    def __init__(self, expression):
-        self.expression = expression
-
-    def __repr__(self):
-        return (f"ReturnNode({repr(self.expression)})")
-
-class ExpressionNode(ASTNode):
-    def __init__(self, constant):
-        self.constant = constant
-
-    def __repr__(self):
-        return (f"ReturnNode({repr(self.constant)})")
+        return self.name
 
 class ConstantNode(ASTNode):
+    ## TODO: add different types of 'values'
     def __init__(self, value):
         self.value = value
 
     def __repr__(self):
         return repr(self.value)
+
+    def assemble(self):
+        return ImmediateASM(self.value)
+ 
+
+class ExpressionNode(ASTNode):
+    def __init__(self, constant: ConstantNode):
+        # This should be refactored to have the bottom (constant) inherit
+        self.constant = constant
+
+    def __repr__(self):
+        return (f"ReturnNode({repr(self.constant)})")
     
+    def assemble(self):
+        return self.constant.assemble()
+ 
+class ReturnNode(ASTNode):
+    def __init__(self, expression: ExpressionNode):
+        self.expression = expression
+
+    def __repr__(self):
+        return (f"ReturnNode({repr(self.expression)})")
+    
+    def assemble(self):
+        exprASM = self.expression.assemble()
+        return [
+            MoveASM(exprASM, RegisterASM(RegistersEnum.EAX)),
+            ReturnASM()]
+ 
+class FunctionNode(ASTNode):
+    def __init__(self, identifier: IdentifierNode, statement: ReturnNode):
+        self.identifier = identifier
+        self.statement = statement
+
+    def __repr__(self):
+        return (f"FunctionNode({repr(self.identifier)}, {repr(self.statement)})")
+    
+    def assemble():
+        # TODO: finish
+        return None
+
+class ProgramNode(ASTNode):
+    def __init__(self, function: FunctionNode):
+        self.function = function
+
+    def __repr__(self):
+        return (f"ProgramNode({repr(self.function)})")
+   
 class ASM():
     pass
 
@@ -64,7 +82,7 @@ class FunctionASM(ASM):
 class InstructionASM(ASM):
     pass
 
-class ExpressionASM(InstructionASM):
+class MoveASM(InstructionASM):
     # WE only have move rn
     def __init__(self, src, dst):
         self.src = src
@@ -83,6 +101,12 @@ class ImmediateASM(OperandASM):
 class RegisterASM(OperandASM):
     def __init__(self, reg):
         self.val = reg
+
+class RegistersEnum(Enum):
+    RAX = auto()
+    EAX = auto()
+    RBX = auto()
+    EBX = auto()
 
 class Parser():
     def __init__(self, tokens):

@@ -1,4 +1,5 @@
+from parser import *
 
-
-def asmgenerate(ast):
-    return ""
+def asmgenerate(ast: ProgramNode):
+    asmTree = ast.assemble()
+    return asmTree.codegen()

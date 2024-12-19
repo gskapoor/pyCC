@@ -47,7 +47,7 @@ class ReturnNode(ASTNode):
     def assemble(self):
         exprASM = self.expression.assemble()
         return [
-            MoveASM(exprASM, RegisterASM(RegistersEnum.EAX)),
+            MoveASM(exprASM, RegisterASM(RegisterEnum.EAX)),
             ReturnASM()]
  
 class FunctionNode(ASTNode):
@@ -77,7 +77,7 @@ class ProgramNode(ASTNode):
 class ASM():
     pass
    
-class RegistersEnum(Enum):
+class RegisterEnum(Enum):
     RAX = auto()
     EAX = auto()
     RBX = auto()
@@ -87,18 +87,36 @@ class OperandASM(ASM):
     pass
 
 class RegisterASM(OperandASM):
-    def __init__(self, reg: RegistersEnum):
+    def __init__(self, reg: RegisterEnum):
         self.val = reg
 
     def __repr__(self):
         return repr(self.val)
+    
+    def codegen(self):
+        match self.val:
+            case RegisterEnum.RAX:
+                return "%rax"
+            case RegisterEnum.EAX:
+                return "%eax"
+            case RegisterEnum.RBX:
+                return "%rbx"
+            case RegisterEnum.EBX:
+                return "%ebx"
+            case _:
+                raise TypeError("Invalid Register: ", self.val)
 
 class ImmediateASM(OperandASM):
+    # Right now it's just immediate ints
     def __init__(self, val):
         self.val = val
     
     def __repr__(self):
         return repr(self.val)
+    
+    def codegen(self):
+        return f"${self.val}"
+
 
 class InstructionASM(ASM):
     pass
@@ -111,10 +129,15 @@ class MoveASM(InstructionASM):
     
     def __repr__(self):
         return f"MOVE({repr(self.src)}, {repr(self.dst)})"
+    
+    def codegen(self):
+        return f"movl {self.src.codegen()}, {self.dst.codegen()}"
 
 class ReturnASM(InstructionASM):
     def __repr__(self):
         return f"RET"
+    def codegen(self):
+        return "ret"
 
 class FunctionASM(ASM):
     def __init__(self, name: str, instructions: List[InstructionASM]):
@@ -123,6 +146,18 @@ class FunctionASM(ASM):
 
     def __repr__(self):
         return f"FUNC({self.name}, {repr(self.instructions)})"
+    
+    def codegen(self):
+        ## Note: this makes this compiler arch dependent
+        ## This is made for linux at the moment
+        res = ""
+        res += f"\t.globl {self.name}\n"
+        res += f"{self.name}:\n"
+        for instruction in self.instructions:
+            res += f"\t{instruction.codegen()}\n"
+        if res == None:
+            raise ValueError("Invalid Instruction")
+        return res
 
 class ProgramASM(ASM):
     def __init__(self, function: FunctionASM):
@@ -130,6 +165,12 @@ class ProgramASM(ASM):
 
     def __repr__(self):
         return f"PROG({repr(self.function)})"
+    
+    def codegen(self):
+        res = self.function.codegen()
+        res += f"\n.section .note.GNU-stack,\"\",@progbits\n"
+        return res
+
  
 
 class Parser():
@@ -241,5 +282,4 @@ class Parser():
 def parse(input):
     myparser = Parser(input)
     res = myparser.parseProgram()
-    print(res.assemble())
-    return res;
+    return res

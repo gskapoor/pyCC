@@ -32,7 +32,7 @@ class ExpressionNode(ASTNode):
         self.constant = constant
 
     def __repr__(self):
-        return (f"ReturnNode({repr(self.constant)})")
+        return (f"ExprNode({repr(self.constant)})")
     
     def assemble(self):
         return self.constant.assemble()
@@ -58,9 +58,10 @@ class FunctionNode(ASTNode):
     def __repr__(self):
         return (f"FunctionNode({repr(self.identifier)}, {repr(self.statement)})")
     
-    def assemble():
-        # TODO: finish
-        return None
+    def assemble(self):
+        funcName = repr(self.identifier)
+        statementAsm = self.statement.assemble()
+        return FunctionASM(funcName, statementAsm)
 
 class ProgramNode(ASTNode):
     def __init__(self, function: FunctionNode):
@@ -68,6 +69,10 @@ class ProgramNode(ASTNode):
 
     def __repr__(self):
         return (f"ProgramNode({repr(self.function)})")
+    
+    def assemble(self):
+        funcASM = self.function.assemble()
+        return ProgramASM(funcASM)
    
 class ASM():
     pass
@@ -85,9 +90,15 @@ class RegisterASM(OperandASM):
     def __init__(self, reg: RegistersEnum):
         self.val = reg
 
+    def __repr__(self):
+        return repr(self.val)
+
 class ImmediateASM(OperandASM):
     def __init__(self, val):
         self.val = val
+    
+    def __repr__(self):
+        return repr(self.val)
 
 class InstructionASM(ASM):
     pass
@@ -97,18 +108,28 @@ class MoveASM(InstructionASM):
     def __init__(self, src: OperandASM, dst: OperandASM):
         self.src = src
         self.dst = dst
+    
+    def __repr__(self):
+        return f"MOVE({repr(self.src)}, {repr(self.dst)})"
 
 class ReturnASM(InstructionASM):
-    pass
+    def __repr__(self):
+        return f"RET"
 
 class FunctionASM(ASM):
     def __init__(self, name: str, instructions: List[InstructionASM]):
         self.name = name
         self.instructions = instructions
 
+    def __repr__(self):
+        return f"FUNC({self.name}, {repr(self.instructions)})"
+
 class ProgramASM(ASM):
     def __init__(self, function: FunctionASM):
         self.function = function
+
+    def __repr__(self):
+        return f"PROG({repr(self.function)})"
  
 
 class Parser():
@@ -196,14 +217,14 @@ class Parser():
             return None
         self.pos += 1
 
-        return parsedExpr
+        return ReturnNode(parsedExpr)
     
     def parseExpression(self):
 
         if not self.verifyTokens(TokenType.CONSTINT):
             raise ValueError("Can't parse Expression")
             return None
-        res = ExpressionNode(self.tokens[self.pos][1])
+        res = ExpressionNode(ConstantNode(self.tokens[self.pos][1]))
         self.pos += 1
         return res
 
@@ -220,5 +241,5 @@ class Parser():
 def parse(input):
     myparser = Parser(input)
     res = myparser.parseProgram()
-    print(res)
+    print(res.assemble())
     return res;

@@ -3,9 +3,11 @@ from typing import List
 
 from .lexer import TokenType
 
+
 class ASTNode:
     # Base Node Class
     pass
+
 
 class IdentifierNode(ASTNode):
     def __init__(self, name: str):
@@ -13,6 +15,7 @@ class IdentifierNode(ASTNode):
 
     def __repr__(self):
         return self.name
+
 
 class ConstantNode(ASTNode):
     def __init__(self, value):
@@ -23,7 +26,7 @@ class ConstantNode(ASTNode):
 
     def assemble(self):
         return ImmediateASM(self.value)
- 
+
 
 class ExpressionNode(ASTNode):
     def __init__(self, constant: ConstantNode):
@@ -31,59 +34,64 @@ class ExpressionNode(ASTNode):
         self.constant = constant
 
     def __repr__(self):
-        return (f"ExprNode({repr(self.constant)})")
-    
+        return f"ExprNode({repr(self.constant)})"
+
     def assemble(self):
         return self.constant.assemble()
- 
+
+
 class ReturnNode(ASTNode):
     def __init__(self, expression: ExpressionNode):
         self.expression = expression
 
     def __repr__(self):
-        return (f"ReturnNode({repr(self.expression)})")
-    
+        return f"ReturnNode({repr(self.expression)})"
+
     def assemble(self):
         exprASM = self.expression.assemble()
-        return [
-            MoveASM(exprASM, RegisterASM(RegisterEnum.EAX)),
-            ReturnASM()]
- 
+        return [MoveASM(exprASM, RegisterASM(RegisterEnum.EAX)), ReturnASM()]
+
+
 class FunctionNode(ASTNode):
     def __init__(self, identifier: IdentifierNode, statement: ReturnNode):
         self.identifier = identifier
         self.statement = statement
 
     def __repr__(self):
-        return (f"FunctionNode({repr(self.identifier)}, {repr(self.statement)})")
-    
+        return f"FunctionNode({repr(self.identifier)}, {repr(self.statement)})"
+
     def assemble(self):
         funcName = repr(self.identifier)
         statementAsm = self.statement.assemble()
         return FunctionASM(funcName, statementAsm)
+
 
 class ProgramNode(ASTNode):
     def __init__(self, function: FunctionNode):
         self.function = function
 
     def __repr__(self):
-        return (f"ProgramNode({repr(self.function)})")
-    
+        return f"ProgramNode({repr(self.function)})"
+
     def assemble(self):
         funcASM = self.function.assemble()
         return ProgramASM(funcASM)
-   
-class ASM():
+
+
+class ASM:
     pass
-   
+
+
 class RegisterEnum(Enum):
     RAX = auto()
     EAX = auto()
     RBX = auto()
     EBX = auto()
 
+
 class OperandASM(ASM):
     pass
+
 
 class RegisterASM(OperandASM):
     def __init__(self, reg: RegisterEnum):
@@ -91,7 +99,7 @@ class RegisterASM(OperandASM):
 
     def __repr__(self):
         return repr(self.val)
-    
+
     def codegen(self):
         match self.val:
             case RegisterEnum.RAX:
@@ -105,14 +113,15 @@ class RegisterASM(OperandASM):
             case _:
                 raise TypeError("Invalid Register: ", self.val)
 
+
 class ImmediateASM(OperandASM):
     # Right now it's just immediate ints
     def __init__(self, val):
         self.val = val
-    
+
     def __repr__(self):
         return repr(self.val)
-    
+
     def codegen(self):
         return f"${self.val}"
 
@@ -120,23 +129,27 @@ class ImmediateASM(OperandASM):
 class InstructionASM(ASM):
     pass
 
+
 class MoveASM(InstructionASM):
     # WE only have move rn
     def __init__(self, src: OperandASM, dst: OperandASM):
         self.src = src
         self.dst = dst
-    
+
     def __repr__(self):
         return f"MOVE({repr(self.src)}, {repr(self.dst)})"
-    
+
     def codegen(self):
         return f"movl {self.src.codegen()}, {self.dst.codegen()}"
+
 
 class ReturnASM(InstructionASM):
     def __repr__(self):
         return "RET"
+
     def codegen(self):
         return "ret"
+
 
 class FunctionASM(ASM):
     def __init__(self, name: str, instructions: List[InstructionASM]):
@@ -145,7 +158,7 @@ class FunctionASM(ASM):
 
     def __repr__(self):
         return f"FUNC({self.name}, {repr(self.instructions)})"
-    
+
     def codegen(self):
         ## Note: this makes this compiler arch dependent
         ## This is made for linux at the moment
@@ -158,21 +171,21 @@ class FunctionASM(ASM):
             raise ValueError("Invalid Instruction")
         return res
 
+
 class ProgramASM(ASM):
     def __init__(self, function: FunctionASM):
         self.function = function
 
     def __repr__(self):
         return f"PROG({repr(self.function)})"
-    
+
     def codegen(self):
         res = self.function.codegen()
-        res += "\n.section .note.GNU-stack,\"\",@progbits\n"
+        res += '\n.section .note.GNU-stack,"",@progbits\n'
         return res
 
- 
 
-class Parser():
+class Parser:
     def __init__(self, tokens):
         self.tokens = tokens
         self.root = ProgramNode(None)
@@ -181,15 +194,14 @@ class Parser():
     def verifyTokens(self, *expectedTokens):
         if self.pos + len(expectedTokens) > len(self.tokens):
             return False
-        
+
         for index, token in enumerate(expectedTokens):
             if self.tokens[self.pos + index][0] != token:
                 return False
         return True
 
-
     def parseProgram(self):
-        ## Always start with a 'prog' 
+        ## Always start with a 'prog'
         parsedFunc = self.parseFunction()
         if not parsedFunc:
             return None
@@ -207,7 +219,7 @@ class Parser():
         if self.pos > len(self.tokens):
             self.pos = startingPos
             return None
-        
+
         if not self.verifyTokens(TokenType.INT):
             self.pos = startingPos
             raise ValueError("Function did not start with Int")
@@ -216,7 +228,9 @@ class Parser():
 
         parsed_identifier = self.parseIdentifier()
 
-        if not self.verifyTokens(TokenType.POPEN, TokenType.VOID, TokenType.PCLOSE, TokenType.BOPEN):
+        if not self.verifyTokens(
+            TokenType.POPEN, TokenType.VOID, TokenType.PCLOSE, TokenType.BOPEN
+        ):
             self.pos = startingPos
             raise ValueError("Function did not start with '(){'")
 
@@ -226,13 +240,12 @@ class Parser():
         if not parsed_statement:
             return None
 
-
         if not self.verifyTokens(TokenType.BCLOSE):
             self.pos = startingPos
             raise ValueError("Can't parse Function")
 
         self.pos += 1
-       
+
         return FunctionNode(parsed_identifier, parsed_statement)
 
     def parseStatement(self):

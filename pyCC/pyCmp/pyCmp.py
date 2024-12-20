@@ -5,6 +5,7 @@ from . import lexer
 from . import parser
 from . import asmgen
 
+
 def py_compile(file_in_name: str, file_out_name: str, mode: int):
     """_summary_
 
@@ -12,7 +13,7 @@ def py_compile(file_in_name: str, file_out_name: str, mode: int):
         file_in_name (str): Name of the input file
         file_out_name (str): name of the output file
         mode (int): Which level of compiling the compiler will run under,
-                    (default is 4 (max level)) 
+                    (default is 4 (max level))
 
     Returns:
         _type_: _description_

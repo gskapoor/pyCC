@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import lexer
-import parser
-import asmgen
+from . import lexer
+from . import parser
+from . import asmgen
 
 def compile(fileInName, fileOutName, mode):
     with open(fileInName, "r") as fileIn:

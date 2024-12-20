@@ -1,7 +1,7 @@
 from enum import Enum, auto
 from typing import List
 
-from lexer import TokenType
+from .lexer import TokenType
 
 class ASTNode:
     # Base Node Class

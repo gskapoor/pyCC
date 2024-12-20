@@ -1,4 +1,4 @@
-from .parser import ProgramNode
+from .ASTNode import ProgramNode
 
 
 def asmgenerate(ast: ProgramNode) -> str:

@@ -1,5 +1,6 @@
 from enum import Enum, auto
 import re
+from typing import (List, Tuple)
 
 
 class TokenType(Enum):
@@ -29,7 +30,18 @@ TokenToRegex = {
 }
 
 
-def lex(input_str: str):
+def lex(input_str: str) -> List[Tuple[TokenType, str]]:
+    """ Lexes input string into Tokens
+
+    Args:
+        input_str (str): The input string
+
+    Raises:
+        ValueError: Error parsing
+
+    Returns:
+        List[(TokenType, str)]: Tokens lexed
+    """
     res = []
 
     input_str = input_str.strip()

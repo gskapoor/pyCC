@@ -3,9 +3,10 @@
 
 import sys
 import subprocess
-from .pyCmp import pyCmp
 
-def main():
+from pyCmp.pyCmp import py_compile # pylint: disable=all
+
+def main() -> int:
     """
     _summary_ Main Function for Compiler 
     """
@@ -48,7 +49,7 @@ def main():
               end="")
         return 1
     ## Compile time : )
-    pyCmp.compile(f"{file_prefix}.i", f"{file_prefix}.s", mode)
+    py_compile(f"{file_prefix}.i", f"{file_prefix}.s", mode)
     subprocess.run(["rm", f"{file_prefix}.i" ], check=True)
 
     ## Assembling time : )

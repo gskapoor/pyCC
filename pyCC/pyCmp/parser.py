@@ -15,7 +15,6 @@ class IdentifierNode(ASTNode):
         return self.name
 
 class ConstantNode(ASTNode):
-    ## TODO: add different types of 'values'
     def __init__(self, value):
         self.value = value
 
@@ -135,7 +134,7 @@ class MoveASM(InstructionASM):
 
 class ReturnASM(InstructionASM):
     def __repr__(self):
-        return f"RET"
+        return "RET"
     def codegen(self):
         return "ret"
 
@@ -168,7 +167,7 @@ class ProgramASM(ASM):
     
     def codegen(self):
         res = self.function.codegen()
-        res += f"\n.section .note.GNU-stack,\"\",@progbits\n"
+        res += "\n.section .note.GNU-stack,\"\",@progbits\n"
         return res
 
  
@@ -199,12 +198,10 @@ class Parser():
         ## This may actually be unecessary
         if len(self.tokens) != self.pos:
             raise ValueError("Didn't quite parse everything")
-            return None
         self.root.function = parsedFunc
         return self.root
 
     def parseFunction(self):
-        ## TODO: figure this error handling out properly
         startingPos = self.pos
 
         if self.pos > len(self.tokens):
@@ -214,29 +211,29 @@ class Parser():
         if not self.verifyTokens(TokenType.INT):
             self.pos = startingPos
             raise ValueError("Function did not start with Int")
-            return None
+
         self.pos += 1
 
-        parsedIdentifier = self.parseIdentifier()
+        parsed_identifier = self.parseIdentifier()
 
         if not self.verifyTokens(TokenType.POPEN, TokenType.VOID, TokenType.PCLOSE, TokenType.BOPEN):
             self.pos = startingPos
             raise ValueError("Function did not start with '(){'")
-            return None
+
         self.pos += 4
 
-        parsedStatement = self.parseStatement()
-        if not parsedStatement:
+        parsed_statement = self.parseStatement()
+        if not parsed_statement:
             return None
 
 
         if not self.verifyTokens(TokenType.BCLOSE):
             self.pos = startingPos
             raise ValueError("Can't parse Function")
-            return None
+
         self.pos += 1
        
-        return FunctionNode(parsedIdentifier, parsedStatement)
+        return FunctionNode(parsed_identifier, parsed_statement)
 
     def parseStatement(self):
 
@@ -250,21 +247,20 @@ class Parser():
         if not parsedExpr:
             self.pos = startingPos
             raise ValueError("Can't parse Statement")
-            return None
 
         if not self.verifyTokens(TokenType.SEMICOLON):
             self.pos = startingPos
             raise ValueError("Can't parse Statement")
-            return None
+
         self.pos += 1
 
         return ReturnNode(parsedExpr)
-    
+
     def parseExpression(self):
 
         if not self.verifyTokens(TokenType.CONSTINT):
             raise ValueError("Can't parse Expression")
-            return None
+
         res = ExpressionNode(ConstantNode(self.tokens[self.pos][1]))
         self.pos += 1
         return res
@@ -272,14 +268,13 @@ class Parser():
     def parseIdentifier(self):
         if not self.verifyTokens(TokenType.IDENTIFIER):
             raise ValueError("Can't parse Identifier")
-            return None
-        
+
         name = self.tokens[self.pos][1]
         self.pos += 1
         return IdentifierNode(name)
 
 
-def parse(input):
-    myparser = Parser(input)
+def parse(lexed_input) -> ASTNode:
+    myparser = Parser(lexed_input)
     res = myparser.parseProgram()
     return res

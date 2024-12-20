@@ -26,35 +26,20 @@ TokenToRegex = {
     TokenType.IDENTIFIER : re.compile(r'[a-zA-Z_]\w*\b'), 
 }
 
-class Token:
-    def __init__(self, token_type, regexStr):
-        self.token_type = token_type
-        pattern = re.compile
-
-
-def lex(inputStr):
+def lex(input_str: str):
     res = []
 
-    inputStr = inputStr.strip()
-    while (inputStr != ""):
+    input_str = input_str.strip()
+    while input_str != "":
         found = False
-        for type in TokenType:
-            match = TokenToRegex[type].match(inputStr)
-            if (match):
+        for token_type in TokenType:
+            match = TokenToRegex[token_type].match(input_str)
+            if match:
                 found = True
-                res.append((type, match[0]))
-                inputStr = inputStr[len(match[0]):]
+                res.append((token_type, match[0]))
+                input_str = input_str[len(match[0]):]
                 break
         if not found:
-            raise Exception("INVALID LEX")
-            return res
-        inputStr = inputStr.strip()
+            raise ValueError("INVALID LEX")
+        input_str = input_str.strip()
     return res
-
-test = """
-int main(void) {
-    return 100;
-}
-"""
-
-# print(lex(test))

@@ -3,7 +3,7 @@
 
 import sys
 import subprocess
-import pyCmp
+import pyCC.pyCmp as pyCmp
 
 def main():
 

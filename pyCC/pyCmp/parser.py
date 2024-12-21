@@ -1,4 +1,3 @@
-from enum import verify
 from .ASTNode import (
     ConstIntNode,
     FunctionNode,

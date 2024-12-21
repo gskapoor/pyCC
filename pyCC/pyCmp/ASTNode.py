@@ -35,7 +35,7 @@ class ConstIntNode(ExpressionNode):
         self.value = value
 
     def __repr__(self):
-        return f"ConstNode({repr(self.value)}"
+        return f"ConstNode({repr(self.value)})"
 
     def assemble(self):
         return ImmediateASM(self.value)

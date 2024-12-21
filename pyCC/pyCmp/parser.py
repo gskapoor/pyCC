@@ -1,5 +1,5 @@
 from .ASTNode import (
-    ConstantNode,
+    ConstIntNode,
     ExpressionNode,
     FunctionNode,
     ProgramNode,
@@ -99,7 +99,7 @@ class Parser:
         if not self.verifyTokens(TokenType.CONSTINT):
             raise ValueError("Can't parse Expression")
 
-        res = ExpressionNode(ConstantNode(int(self.tokens[self.pos][1])))
+        res = ConstIntNode(int(self.tokens[self.pos][1]))
         self.pos += 1
         return res
 

@@ -1,6 +1,6 @@
 import unittest
 from pyCC.pyCmp.ASTNode import (
-    ConstantNode,
+    ConstIntNode,
     ExpressionNode,
     FunctionNode,
     IdentifierNode,
@@ -27,7 +27,7 @@ class TestParser(unittest.TestCase):
         print(output)
         expected = ProgramNode(
             FunctionNode(
-                IdentifierNode("main"), ReturnNode(ExpressionNode(ConstantNode(1)))
+                IdentifierNode("main"), ReturnNode(ConstIntNode(1))
             )
         )
         self.assertEqual(str(output), str(expected))

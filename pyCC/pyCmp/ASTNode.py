@@ -22,7 +22,12 @@ class IdentifierNode(ASTNode):
         return self.name
 
 
-class ConstantNode(ASTNode):
+class ExpressionNode(ASTNode):
+    def assemble(self):
+        raise ValueError("ExpressionNode is an Abstract Class, something went terribly wrong")
+
+
+class ConstIntNode(ExpressionNode):
     def __init__(self, value):
         self.value = value
 
@@ -33,18 +38,6 @@ class ConstantNode(ASTNode):
         return ImmediateASM(self.value)
 
 
-class ExpressionNode(ASTNode):
-    def __init__(self, constant: ConstantNode):
-        # This should be refactored to have the bottom (constant) inherit
-        self.constant = constant
-
-    def __repr__(self):
-        return f"ExprNode({repr(self.constant)})"
-
-    def assemble(self):
-        return self.constant.assemble()
-
-
 class ReturnNode(ASTNode):
     def __init__(self, expression: ExpressionNode):
         self.expression = expression
@@ -53,8 +46,8 @@ class ReturnNode(ASTNode):
         return f"ReturnNode({repr(self.expression)})"
 
     def assemble(self):
-        exprASM = self.expression.assemble()
-        return [MoveASM(exprASM, RegisterASM(RegisterEnum.EAX)), ReturnASM()]
+        expr_asm = self.expression.assemble()
+        return [MoveASM(expr_asm, RegisterASM(RegisterEnum.EAX)), ReturnASM()]
 
 
 class FunctionNode(ASTNode):
@@ -66,9 +59,9 @@ class FunctionNode(ASTNode):
         return f"FunctionNode({repr(self.identifier)}, {repr(self.statement)})"
 
     def assemble(self):
-        funcName = repr(self.identifier)
-        statementAsm = self.statement.assemble()
-        return FunctionASM(funcName, statementAsm)
+        func_name = repr(self.identifier)
+        statement_asm = self.statement.assemble()
+        return FunctionASM(func_name, statement_asm)
 
 
 class ProgramNode(ASTNode):
@@ -79,5 +72,5 @@ class ProgramNode(ASTNode):
         return f"ProgramNode({repr(self.function)})"
 
     def assemble(self):
-        funcASM = self.function.assemble()
-        return ProgramASM(funcASM)
+        func_asm = self.function.assemble()
+        return ProgramASM(func_asm)

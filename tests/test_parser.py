@@ -24,7 +24,6 @@ class TestParser(unittest.TestCase):
                     }
                     """
         output = parser.parse(lexer.lex(test_prog))
-        print(output)
         expected = ProgramNode(
             FunctionNode(IdentifierNode("main"), ReturnNode(ConstIntNode(1)))
         )
@@ -47,7 +46,6 @@ class TestParser(unittest.TestCase):
                     }
                     """
         output = parser.parse(lexer.lex(test_prog))
-        print(output)
         expected = ProgramNode(
             FunctionNode(
                 IdentifierNode("main"),
@@ -63,7 +61,6 @@ class TestParser(unittest.TestCase):
                     }
                     """
         output = parser.parse(lexer.lex(test_prog))
-        print(output)
         expected = ProgramNode(
             FunctionNode(IdentifierNode("main"), ReturnNode(ConstIntNode(1)))
         )

@@ -13,6 +13,9 @@ class TokenType(Enum):
     BOPEN = auto()
     BCLOSE = auto()
     SEMICOLON = auto()
+    DECREMENT = auto()
+    NEGATE = auto()
+    BITFLIP = auto()
     IDENTIFIER = auto()
 
 
@@ -26,6 +29,9 @@ TokenToRegex = {
     TokenType.BOPEN: re.compile(r"\{"),
     TokenType.BCLOSE: re.compile(r"\}"),
     TokenType.SEMICOLON: re.compile(r";"),
+    TokenType.DECREMENT: re.compile(r"--"),
+    TokenType.NEGATE: re.compile(r"-"),
+    TokenType.BITFLIP: re.compile(r"~"),
     TokenType.IDENTIFIER: re.compile(r"[a-zA-Z_]\w*\b"),
 }
 
@@ -50,6 +56,8 @@ def lex(input_str: str) -> List[Tuple[TokenType, str]]:
         for token_type in TokenType:
             match = TokenToRegex[token_type].match(input_str)
             if match:
+                if token_type == TokenType.DECREMENT:
+                    raise NotImplementedError("Decrement isn't supported yet")
                 found = True
                 res.append((token_type, match[0]))
                 input_str = input_str[len(match[0]) :]

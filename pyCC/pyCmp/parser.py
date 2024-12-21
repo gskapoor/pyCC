@@ -99,7 +99,7 @@ class Parser:
         if not self.verifyTokens(TokenType.CONSTINT):
             raise ValueError("Can't parse Expression")
 
-        res = ExpressionNode(ConstantNode(self.tokens[self.pos][1]))
+        res = ExpressionNode(ConstantNode(int(self.tokens[self.pos][1])))
         self.pos += 1
         return res
 

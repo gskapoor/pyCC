@@ -27,7 +27,7 @@ class ConstantNode(ASTNode):
         self.value = value
 
     def __repr__(self):
-        return repr(self.value)
+        return f"ConstNode({repr(self.value)}"
 
     def assemble(self):
         return ImmediateASM(self.value)

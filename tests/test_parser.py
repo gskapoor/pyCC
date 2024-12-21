@@ -1,4 +1,3 @@
-from ast import UnaryOp
 import unittest
 from pyCC.pyCmp.ASTNode import (
     ConstIntNode,
@@ -11,7 +10,6 @@ from pyCC.pyCmp.ASTNode import (
 )
 import pyCC.pyCmp.parser as parser
 import pyCC.pyCmp.lexer as lexer
-from pyCC.pyCmp.ASMNode import *
 
 
 class TestParser(unittest.TestCase):

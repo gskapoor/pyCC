@@ -8,7 +8,6 @@ from pyCC.pyCmp.ASTNode import (
     IdentifierNode,
     ProgramNode,
     ReturnNode,
-    UnaryExpressionNode,
 )
 import pyCC.pyCmp.parser as parser
 import pyCC.pyCmp.lexer as lexer

@@ -1,6 +1,5 @@
 from .ASTNode import (
     ConstIntNode,
-    ExpressionNode,
     FunctionNode,
     ProgramNode,
     ReturnNode,

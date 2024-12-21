@@ -1,3 +1,4 @@
+from enum import verify
 from .ASTNode import (
     ConstIntNode,
     FunctionNode,
@@ -5,6 +6,8 @@ from .ASTNode import (
     ReturnNode,
     IdentifierNode,
     ASTNode,
+    UnaryExpressionNode,
+    UnaryOperatorNode,
 )
 from .lexer import TokenType
 
@@ -23,6 +26,21 @@ class Parser:
             if self.tokens[self.pos + index][0] != token:
                 return False
         return True
+
+    def consumeTokens(self, *expectedTokens):
+        if self.verifyTokens(*expectedTokens):
+            self.pos += len(expectedTokens)
+            return True
+        return False
+
+    def peek(self, num_tokens=1):
+        if self.pos + num_tokens > len(self.tokens):
+            return []
+        res = []
+        for i in range(num_tokens):
+            res.append(self.tokens[self.pos + i][0])
+
+        return res
 
     def parseProgram(self):
         ## Always start with a 'prog'
@@ -44,70 +62,73 @@ class Parser:
             self.pos = startingPos
             return None
 
-        if not self.verifyTokens(TokenType.INT):
+        if not self.consumeTokens(TokenType.INT):
             self.pos = startingPos
             raise ValueError("Function did not start with Int")
 
-        self.pos += 1
-
         parsed_identifier = self.parseIdentifier()
 
-        if not self.verifyTokens(
+        if not self.consumeTokens(
             TokenType.POPEN, TokenType.VOID, TokenType.PCLOSE, TokenType.BOPEN
         ):
             self.pos = startingPos
             raise ValueError("Function did not start with '(){'")
 
-        self.pos += 4
-
         parsed_statement = self.parseStatement()
         if not parsed_statement:
             return None
 
-        if not self.verifyTokens(TokenType.BCLOSE):
+        if not self.consumeTokens(TokenType.BCLOSE):
             self.pos = startingPos
             raise ValueError("Can't parse Function")
-
-        self.pos += 1
 
         return FunctionNode(parsed_identifier, parsed_statement)
 
     def parseStatement(self):
 
         startingPos = self.pos
-        if not self.verifyTokens(TokenType.RETURN):
+        if not self.consumeTokens(TokenType.RETURN):
             self.pos = startingPos
             return None
-        self.pos += 1
 
         parsedExpr = self.parseExpression()
         if not parsedExpr:
             self.pos = startingPos
             raise ValueError("Can't parse Statement")
 
-        if not self.verifyTokens(TokenType.SEMICOLON):
+        if not self.consumeTokens(TokenType.SEMICOLON):
             self.pos = startingPos
             raise ValueError("Can't parse Statement")
-
-        self.pos += 1
 
         return ReturnNode(parsedExpr)
 
     def parseExpression(self):
 
-        if not self.verifyTokens(TokenType.CONSTINT):
-            raise ValueError("Can't parse Expression")
+        if self.consumeTokens(TokenType.CONSTINT):
+            res = ConstIntNode(int(self.tokens[self.pos - 1][1]))
+            return res
+        elif self.consumeTokens(TokenType.NEGATE):
+            ## Unary time
+            expr = self.parseExpression()
+            return UnaryExpressionNode(UnaryOperatorNode.NEG, expr)
+        elif self.consumeTokens(TokenType.BITFLIP):
+            ## Unary time
+            expr = self.parseExpression()
+            return UnaryExpressionNode(UnaryOperatorNode.BITFLIP, expr)
+        elif self.consumeTokens(TokenType.POPEN):
+            expr = self.parseExpression()
+            if not self.consumeTokens(TokenType.PCLOSE):
+                raise ValueError("Can't parse Expression: Invalid Paranthesis Closure")
+            return expr
 
-        res = ConstIntNode(int(self.tokens[self.pos][1]))
-        self.pos += 1
-        return res
+        raise ValueError("Can't parse Expression")
 
     def parseIdentifier(self):
-        if not self.verifyTokens(TokenType.IDENTIFIER):
+
+        if not self.consumeTokens(TokenType.IDENTIFIER):
             raise ValueError("Can't parse Identifier")
 
-        name = self.tokens[self.pos][1]
-        self.pos += 1
+        name = self.tokens[self.pos - 1][1]
         return IdentifierNode(name)
 
 

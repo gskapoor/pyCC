@@ -1,3 +1,4 @@
+from enum import Enum, auto
 from .ASMNode import (
     FunctionASM,
     ImmediateASM,
@@ -24,11 +25,13 @@ class IdentifierNode(ASTNode):
 
 class ExpressionNode(ASTNode):
     def assemble(self):
-        raise ValueError("ExpressionNode is an Abstract Class, something went terribly wrong")
+        raise ValueError(
+            "ExpressionNode is an Abstract Class, something went terribly wrong"
+        )
 
 
 class ConstIntNode(ExpressionNode):
-    def __init__(self, value):
+    def __init__(self, value: int):
         self.value = value
 
     def __repr__(self):
@@ -36,6 +39,20 @@ class ConstIntNode(ExpressionNode):
 
     def assemble(self):
         return ImmediateASM(self.value)
+
+
+class UnaryOperatorNode(Enum):
+    NEG = auto()
+    BITFLIP = auto()
+
+
+class UnaryExpressionNode(ExpressionNode):
+    def __init__(self, op: UnaryOperatorNode, expr: ExpressionNode):
+        self.op = op
+        self.expr = expr
+
+    def __repr__(self):
+        return f"Unary({repr(self.op)}, {repr(self.expr)})"
 
 
 class ReturnNode(ASTNode):

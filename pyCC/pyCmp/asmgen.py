@@ -96,7 +96,6 @@ def asmFromTacky(node: TackyNode):
             return ProgramASM(asmFromTacky(func))
 
         case _:
-            print(node)
             raise ValueError("Invalid TACKY Expr")
 
 
@@ -109,6 +108,5 @@ def asmgenerate(tacky: TackyNode) -> str:
     Returns:
         str: Assembly Code
     """
-    print(tacky)
     asm = asmFromTacky(tacky)
     return asm.codegen()

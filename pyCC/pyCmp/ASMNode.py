@@ -9,8 +9,7 @@ class ASM:
 class RegisterEnum(Enum):
     RAX = auto()
     EAX = auto()
-    RBX = auto()
-    EBX = auto()
+    R10D = auto()
 
 
 class OperandASM(ASM):
@@ -30,24 +29,41 @@ class RegisterASM(OperandASM):
                 return "%rax"
             case RegisterEnum.EAX:
                 return "%eax"
-            case RegisterEnum.RBX:
-                return "%rbx"
-            case RegisterEnum.EBX:
-                return "%ebx"
+            case RegisterEnum.R10D:
+                return "%r10d"
             case _:
                 raise TypeError("Invalid Register: ", self.val)
 
 
-class ImmediateASM(OperandASM):
+class IntASM(OperandASM):
     # Right now it's just immediate ints
-    def __init__(self, val):
+    def __init__(self, val: int):
         self.val = val
 
     def __repr__(self):
-        return repr(self.val)
+        return f"INT({self.val})"
 
     def codegen(self):
         return f"${self.val}"
+
+
+class PsuedoRegASM(OperandASM):
+    def __init__(self, identifier: str):
+        self.identifier = identifier
+
+    def __repr__(self):
+        return f"PsuedoReg({self.identifier})"
+
+
+class StackASM(OperandASM):
+    def __init__(self, num_vals: int):
+        self.index = num_vals
+
+    def __repr__(self):
+        return f"Stack({self.index})"
+
+    def codegen(self):
+        return f"({self.index})%rbp"
 
 
 class InstructionASM(ASM):
@@ -67,12 +83,49 @@ class MoveASM(InstructionASM):
         return f"movl {self.src.codegen()}, {self.dst.codegen()}"
 
 
+class UnaryOpASM(Enum):
+    NEG = auto()
+    BITFLIP = auto()
+
+    def codegen(self):
+        if self == UnaryOpASM.NEG:
+            return "negl"
+        return "notl"
+
+class UnaryASM(InstructionASM):
+
+    def __init__(self, op: UnaryOpASM, dst: OperandASM):
+        self.op = op
+        self.dst = dst
+
+    def __repr__(self):
+        return f"Unary({self.op}, {repr(self.dst)})"
+    
+    def codegen(self):
+        return f"{self.op.codegen()} {self.dst.codegen()}"
+
+
+class AllocateStack(InstructionASM):
+
+    def __init__(self, num_vals: int):
+        self.num_vals = num_vals
+
+    def __repr__(self):
+        return f"AllocateStack({self.num_vals})"
+    
+    def codegen(self):
+        return f"subq ${self.num_vals} %rsp"
+
+
 class ReturnASM(InstructionASM):
     def __repr__(self):
         return "RET"
 
     def codegen(self):
-        return "ret"
+        res = "movq %rbp, %rsp\n"
+        res += "popq %rbp\n"
+        res += "ret"
+        return res
 
 
 class FunctionASM(ASM):
@@ -89,6 +142,8 @@ class FunctionASM(ASM):
         res = ""
         res += f"\t.globl {self.name}\n"
         res += f"{self.name}:\n"
+        res += "pushq %rbp\n"
+        res += "movq %rsp, %rbp\n"
         for instruction in self.instructions:
             res += f"\t{instruction.codegen()}\n"
         if res == None:

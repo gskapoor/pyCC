@@ -1,7 +1,7 @@
 from enum import Enum, auto
 from .ASMNode import (
     FunctionASM,
-    ImmediateASM,
+    IntASM,
     MoveASM,
     ProgramASM,
     RegisterASM,
@@ -38,7 +38,7 @@ class ConstIntNode(ExpressionNode):
         return f"ConstIntNode({repr(self.value)})"
 
     def assemble(self):
-        return ImmediateASM(self.value)
+        return IntASM(self.value)
 
 
 class UnaryOperatorNode(Enum):

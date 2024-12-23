@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from pyCC.pyCmp import lexer
-from pyCC.pyCmp import parser
-from pyCC.pyCmp import asmgen
+from . import lexer
+from . import parser
+from . import asmgen
 
 
 def py_compile(file_in_name: str, file_out_name: str, mode: int):

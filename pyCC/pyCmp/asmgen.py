@@ -13,12 +13,19 @@ from .ASMNode import (
     UnaryOpASM,
 )
 from .ASTNode import ProgramNode
-from .tackyNode import *
+from .tackyNode import (
+    TackyNode,
+    ConstIntTacky,
+    VarTacky,
+    ReturnTacky,
+    UnaryTacky,
+    FuncTacky,
+    ProgramTacky,
+    UnaryOpTacky,
+)
 
-OP_TABLE = {
-    UnaryOpTacky.NEG: UnaryOpASM.NEG,
-    UnaryOpTacky.BITFLIP: UnaryOpASM.BITFLIP
-}
+OP_TABLE = {UnaryOpTacky.NEG: UnaryOpASM.NEG, UnaryOpTacky.BITFLIP: UnaryOpASM.BITFLIP}
+
 
 def asmFromTacky(node: TackyNode):
     match node:
@@ -45,7 +52,10 @@ def asmFromTacky(node: TackyNode):
                 new_ins = asmFromTacky(instruction)
                 for ins in new_ins:
                     match ins:
-                        case MoveASM(src=PsuedoRegASM(identifier=src_id), dst=PsuedoRegASM(identifier=dst_id)):
+                        case MoveASM(
+                            src=PsuedoRegASM(identifier=src_id),
+                            dst=PsuedoRegASM(identifier=dst_id),
+                        ):
                             if src_id not in found:
                                 num_vars += 1
                                 found[src_id] = num_vars
@@ -62,7 +72,9 @@ def asmFromTacky(node: TackyNode):
                                 found[src_id] = num_vars
                             new_src = StackASM(-1 * sizeof_int * found[src_id])
                             res.append(MoveASM(new_src, cur_dst))
-                        case MoveASM(src=cur_source, dst=PsuedoRegASM(identifier=dst_id)):
+                        case MoveASM(
+                            src=cur_source, dst=PsuedoRegASM(identifier=dst_id)
+                        ):
                             if dst_id not in found:
                                 num_vars += 1
                                 found[dst_id] = num_vars
@@ -78,8 +90,6 @@ def asmFromTacky(node: TackyNode):
                         case _:
                             res.append(ins)
             res[0].num_vals = num_vars * sizeof_int
-
-
 
             return FunctionASM(identifier, res)
 

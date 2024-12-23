@@ -12,7 +12,6 @@ from .ASMNode import (
     ProgramASM,
     UnaryOpASM,
 )
-from .ASTNode import ProgramNode
 from .tackyNode import (
     TackyNode,
     ConstIntTacky,
@@ -35,7 +34,7 @@ def asmFromTacky(node: TackyNode):
             return PsuedoRegASM(name)
         case ReturnTacky(val=val):
             asm_val = asmFromTacky(val)
-            return [MoveASM(asm_val, RegisterEnum.EAX), ReturnASM()]
+            return [MoveASM(asm_val, RegisterASM(RegisterEnum.EAX)), ReturnASM()]
         case UnaryTacky(op=op, src=src, dst=dst):
             return [
                 MoveASM(asmFromTacky(src), asmFromTacky(dst)),
@@ -93,14 +92,15 @@ def asmFromTacky(node: TackyNode):
 
             return FunctionASM(identifier, res)
 
-        case ProgramTacky(function=function):
-            return ProgramASM(asmFromTacky(function))
+        case ProgramTacky(func=func):
+            return ProgramASM(asmFromTacky(func))
 
         case _:
+            print(node)
             raise ValueError("Invalid TACKY Expr")
 
 
-def asmgenerate(ast: ProgramNode) -> str:
+def asmgenerate(tacky: TackyNode) -> str:
     """Generate Assembly from the ProgNode
 
     Args:
@@ -109,6 +109,6 @@ def asmgenerate(ast: ProgramNode) -> str:
     Returns:
         str: Assembly Code
     """
-
-    asm_tree = ast.assemble()
-    return asm_tree.codegen()
+    print(tacky)
+    asm = asmFromTacky(tacky)
+    return asm.codegen()

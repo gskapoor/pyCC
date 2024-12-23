@@ -1,4 +1,4 @@
-from pyCC.pyCmp.ASTNode import (
+from .ASTNode import (
     ASTNode,
     ConstIntNode,
     ExpressionNode,
@@ -9,7 +9,7 @@ from pyCC.pyCmp.ASTNode import (
     ProgramNode,
     UnaryOperatorNode
 )
-from pyCC.pyCmp.tackyNode import ConstIntTacky, FuncTacky, ProgramTacky, ReturnTacky, UnaryOpTacky, UnaryTacky, VarTacky
+from .tackyNode import ConstIntTacky, FuncTacky, ProgramTacky, ReturnTacky, UnaryOpTacky, UnaryTacky, VarTacky
 
 
 OP_TABLE = {

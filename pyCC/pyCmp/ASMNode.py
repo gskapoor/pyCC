@@ -63,7 +63,7 @@ class StackASM(OperandASM):
         return f"Stack({self.index})"
 
     def codegen(self):
-        return f"({self.index})%rbp"
+        return f"{self.index}(%rbp)"
 
 
 class InstructionASM(ASM):
@@ -114,7 +114,7 @@ class AllocateStack(InstructionASM):
         return f"AllocateStack({self.num_vals})"
     
     def codegen(self):
-        return f"subq ${self.num_vals} %rsp"
+        return f"subq ${self.num_vals}, %rsp"
 
 
 class ReturnASM(InstructionASM):

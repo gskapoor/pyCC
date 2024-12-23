@@ -13,7 +13,7 @@ def main() -> int:
     """
 
     args = sys.argv
-    mode = 3
+    mode = 4
     if len(args) < 2 or len(args) > 3:
         print(f"Usage: {args[0]} <C file> {{--lex|--parse|--codegen}}", file=sys.stderr)
         return 1
@@ -23,8 +23,10 @@ def main() -> int:
             mode = 0
         elif args[2] == "--parse":
             mode = 1
-        elif args[2] == "--codegen":
+        elif args[2] == "--tacky":
             mode = 2
+        elif args[2] == "--codegen":
+            mode = 3
         else:
             print(
                 f"Usage: {args[0]} <C file> {{--lex|--parse|--codegen}}",
@@ -52,6 +54,9 @@ def main() -> int:
     ## Compile time : )
     py_compile(f"{file_prefix}.i", f"{file_prefix}.s", mode)
     subprocess.run(["rm", f"{file_prefix}.i"], check=True)
+
+    if mode < 4:
+        return 0
 
     ## Assembling time : )
     result = subprocess.run(

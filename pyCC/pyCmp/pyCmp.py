@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from . import tackygen
 from . import lexer
 from . import parser
 from . import asmgen
@@ -27,8 +28,12 @@ def py_compile(file_in_name: str, file_out_name: str, mode: int):
         if mode < 2:
             return True
 
-        asm = asmgen.asmgenerate(parse_put)
+        tacky = tackygen.tackify(parse_put)
         if mode < 3:
+            return True
+
+        asm = asmgen.asmgenerate(tacky)
+        if mode < 4:
             return True
 
         with open(file_out_name, "w", encoding="utf-8") as file_out:

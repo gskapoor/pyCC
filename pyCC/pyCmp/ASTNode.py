@@ -1,6 +1,7 @@
+from enum import Enum, auto
 from .ASMNode import (
     FunctionASM,
-    ImmediateASM,
+    IntASM,
     MoveASM,
     ProgramASM,
     RegisterASM,
@@ -22,27 +23,36 @@ class IdentifierNode(ASTNode):
         return self.name
 
 
-class ConstantNode(ASTNode):
-    def __init__(self, value):
+class ExpressionNode(ASTNode):
+    def assemble(self):
+        raise ValueError(
+            "ExpressionNode is an Abstract Class, something went terribly wrong"
+        )
+
+
+class ConstIntNode(ExpressionNode):
+    def __init__(self, value: int):
         self.value = value
 
     def __repr__(self):
-        return f"ConstNode({repr(self.value)}"
+        return f"ConstIntNode({repr(self.value)})"
 
     def assemble(self):
-        return ImmediateASM(self.value)
+        return IntASM(self.value)
 
 
-class ExpressionNode(ASTNode):
-    def __init__(self, constant: ConstantNode):
-        # This should be refactored to have the bottom (constant) inherit
-        self.constant = constant
+class UnaryOperatorNode(Enum):
+    NEG = auto()
+    BITFLIP = auto()
+
+
+class UnaryExpressionNode(ExpressionNode):
+    def __init__(self, op: UnaryOperatorNode, expr: ExpressionNode):
+        self.op = op
+        self.expr = expr
 
     def __repr__(self):
-        return f"ExprNode({repr(self.constant)})"
-
-    def assemble(self):
-        return self.constant.assemble()
+        return f"Unary({repr(self.op)}, {repr(self.expr)})"
 
 
 class ReturnNode(ASTNode):
@@ -53,8 +63,8 @@ class ReturnNode(ASTNode):
         return f"ReturnNode({repr(self.expression)})"
 
     def assemble(self):
-        exprASM = self.expression.assemble()
-        return [MoveASM(exprASM, RegisterASM(RegisterEnum.EAX)), ReturnASM()]
+        expr_asm = self.expression.assemble()
+        return [MoveASM(expr_asm, RegisterASM(RegisterEnum.EAX)), ReturnASM()]
 
 
 class FunctionNode(ASTNode):
@@ -66,9 +76,9 @@ class FunctionNode(ASTNode):
         return f"FunctionNode({repr(self.identifier)}, {repr(self.statement)})"
 
     def assemble(self):
-        funcName = repr(self.identifier)
-        statementAsm = self.statement.assemble()
-        return FunctionASM(funcName, statementAsm)
+        func_name = repr(self.identifier)
+        statement_asm = self.statement.assemble()
+        return FunctionASM(func_name, statement_asm)
 
 
 class ProgramNode(ASTNode):
@@ -79,5 +89,5 @@ class ProgramNode(ASTNode):
         return f"ProgramNode({repr(self.function)})"
 
     def assemble(self):
-        funcASM = self.function.assemble()
-        return ProgramASM(funcASM)
+        func_asm = self.function.assemble()
+        return ProgramASM(func_asm)

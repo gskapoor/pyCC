@@ -1,0 +1,77 @@
+from enum import Enum, auto
+from typing import List
+
+
+class TackyNode:
+    # abstract class
+    # Maybe i add stuff here to give errors?
+    pass
+
+
+class UnaryOpTacky(Enum):
+    NEG = auto()
+    BITFLIP = auto()
+
+
+class ValTacky(TackyNode):
+    pass
+
+
+class ConstIntTacky(ValTacky):
+    def __init__(self, val: int):
+        self.val = val
+
+    def __repr__(self):
+        return f"ConstInt({self.val})"
+
+
+class VarTacky(ValTacky):
+    def __init__(self, name: str):
+        self.name = name
+
+    def __repr__(self):
+        return f"Var({self.name})"
+
+
+class InstructionTacky(TackyNode):
+    pass
+
+
+class ReturnTacky(InstructionTacky):
+    def __init__(self, val: ValTacky):
+        self.val = val
+
+    def __repr__(self):
+        return f"Return({repr(self.val)})"
+
+
+class UnaryTacky(InstructionTacky):
+    def __init__(self, op: UnaryOpTacky, src: ValTacky, dst: VarTacky):
+        self.op = op
+        self.src = src
+        self.dst = dst
+
+    def __repr__(self):
+        return f"Unary({self.op}, {repr(self.src)}, {repr(self.dst)})"
+
+
+class FuncTacky(TackyNode):
+    def __init__(self, identifier: str, instructions: List[InstructionTacky]):
+        self.identifier = identifier
+        self.instructions = instructions
+
+    def __repr__(self):
+        res = f"Func({self.identifier},["
+        for instruction in self.instructions:
+            res += repr(instruction)
+            res += ", "
+        res += "])"
+        return res
+
+
+class ProgramTacky(TackyNode):
+    def __init__(self, func: FuncTacky):
+        self.func = func
+
+    def __repr__(self):
+        return f"Prog({repr(self.func)})"

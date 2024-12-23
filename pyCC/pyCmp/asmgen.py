@@ -1,7 +1,6 @@
 from .ASMNode import (
     AllocateStack,
     FunctionASM,
-    InstructionASM,
     IntASM,
     PsuedoRegASM,
     RegisterASM,

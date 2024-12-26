@@ -1,4 +1,6 @@
 from .ASTNode import (
+    BinaryExpressionNode,
+    BinaryOperatorNode,
     ConstIntNode,
     FunctionNode,
     ProgramNode,
@@ -10,6 +12,34 @@ from .ASTNode import (
 )
 from .lexer import TokenType
 
+#### OUR CURRENT GRAMMAR 
+#### <program> ::= <function>
+#### <function> ::= "int" <identifier> "(" "void" ")" "{" <statement> "}"
+#### <statement> ::= "return" <exp>
+#### <exp> ::= <factor> | <exp> <binop> <exp>
+#### <unop> ::= "-" | "~"
+#### <binop> ::= "-" | "+" | "*" | "/" | "*"
+#### <identifier> ::= (i'm not rewriting this regex)
+#### <int> ::= (0-9)+
+
+
+## This is a map w/ precedence levels included
+## Idrk how else to do this
+BINOP_TOKENS = {
+    TokenType.ASTERISK: 50,
+    TokenType.FSLASH: 50,
+    TokenType.MODULUS: 50,
+    TokenType.PLUS: 45,
+    TokenType.NEGATE: 45
+}
+
+BINOP_TOK_TO_AST = {
+    TokenType.ASTERISK: BinaryOperatorNode.MUL,
+    TokenType.FSLASH: BinaryOperatorNode.DIV, 
+    TokenType.MODULUS: BinaryOperatorNode.MOD,
+    TokenType.PLUS: BinaryOperatorNode.ADD,
+    TokenType.NEGATE: BinaryOperatorNode.SUB
+}
 
 class Parser:
     def __init__(self, tokens):
@@ -101,8 +131,20 @@ class Parser:
 
         return ReturnNode(parsedExpr)
 
-    def parseExpression(self):
+    def parseExpression(self, min_prec = 0):
+        left_expr = self.parseFactor()
 
+        next_token = self.peek(1)
+        while next_token != [] and next_token[0] in BINOP_TOKENS and BINOP_TOKENS[next_token[0]] >= min_prec:
+            self.pos += 1
+            op = BINOP_TOK_TO_AST[next_token[0]]
+            right_expr = self.parseExpression(min_prec=BINOP_TOKENS[next_token[0]] + 1)
+            left_expr = BinaryExpressionNode(op, left_expr, right_expr)
+            next_token = self.peek(1)
+
+        return left_expr
+   
+    def parseFactor(self):
         if self.consumeTokens(TokenType.CONSTINT):
             res = ConstIntNode(int(self.tokens[self.pos - 1][1]))
             return res
@@ -120,7 +162,6 @@ class Parser:
                 raise ValueError("Can't parse Expression: Invalid Paranthesis Closure")
             return expr
 
-        raise ValueError("Can't parse Expression")
 
     def parseIdentifier(self):
 

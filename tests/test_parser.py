@@ -145,3 +145,25 @@ class TestParser(unittest.TestCase):
             )
         )
         self.assertEqual(str(output), str(expected))
+
+    def test_unary_with_binary(self):
+        test_prog = """
+                    int main(void){
+                        return -1 + 1 ;
+                    }
+                    """
+        output = parser.parse(lexer.lex(test_prog))
+        expected = ProgramNode(
+            FunctionNode(
+                IdentifierNode("main"),
+                ReturnNode(
+                    BinaryExpressionNode(
+                        BinaryOperatorNode.ADD,
+                        UnaryExpressionNode(
+                            UnaryOperatorNode.NEG, ConstIntNode(1)),
+                        ConstIntNode(1)
+                    )
+                ),
+            )
+        )
+        self.assertEqual(str(output), str(expected))

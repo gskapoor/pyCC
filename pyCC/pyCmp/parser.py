@@ -150,11 +150,11 @@ class Parser:
             return res
         elif self.consumeTokens(TokenType.NEGATE):
             ## Unary time
-            expr = self.parseExpression()
+            expr = self.parseFactor()
             return UnaryExpressionNode(UnaryOperatorNode.NEG, expr)
         elif self.consumeTokens(TokenType.BITFLIP):
             ## Unary time
-            expr = self.parseExpression()
+            expr = self.parseFactor()
             return UnaryExpressionNode(UnaryOperatorNode.BITFLIP, expr)
         elif self.consumeTokens(TokenType.POPEN):
             expr = self.parseExpression()

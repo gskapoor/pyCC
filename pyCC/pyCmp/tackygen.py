@@ -1,5 +1,7 @@
 from .ASTNode import (
     ASTNode,
+    BinaryExpressionNode,
+    BinaryOperatorNode,
     ConstIntNode,
     ExpressionNode,
     FunctionNode,
@@ -9,12 +11,17 @@ from .ASTNode import (
     ProgramNode,
     UnaryOperatorNode
 )
-from .tackyNode import ConstIntTacky, FuncTacky, ProgramTacky, ReturnTacky, UnaryOpTacky, UnaryTacky, VarTacky
+from .tackyNode import BinaryOpTacky, BinaryTacky, ConstIntTacky, FuncTacky, ProgramTacky, ReturnTacky, UnaryOpTacky, UnaryTacky, VarTacky
 
 
 OP_TABLE = {
     UnaryOperatorNode.NEG: UnaryOpTacky.NEG,
     UnaryOperatorNode.BITFLIP: UnaryOpTacky.BITFLIP,
+    BinaryOperatorNode.ADD: BinaryOpTacky.ADD,
+    BinaryOperatorNode.SUB: BinaryOpTacky.SUB,
+    BinaryOperatorNode.MUL: BinaryOpTacky.MUL,
+    BinaryOperatorNode.DIV: BinaryOpTacky.DIV,
+    BinaryOperatorNode.MOD: BinaryOpTacky.MOD,
 }
 
 class TackyGen:
@@ -34,6 +41,14 @@ class TackyGen:
                 src,instructions = self.emit_tacky(expr)
                 new_var = self.genVariable()
                 instructions.append(UnaryTacky(OP_TABLE[op], src, new_var))
+                return new_var, instructions
+            case BinaryExpressionNode(op=op, left_expr=left_expr, right_expr=right_expr):
+                left_src, left_instructions = self.emit_tacky(left_expr)
+                right_src, right_instructions = self.emit_tacky(right_expr)
+                instructions = left_instructions + right_instructions
+                new_op = OP_TABLE[op]
+                new_var = self.genVariable()
+                instructions.append(BinaryTacky(new_op, left_src, right_src, new_var))
                 return new_var, instructions
 
 

@@ -131,3 +131,33 @@ class TestTackygen(unittest.TestCase):
         )
         self.assertEqual(output, expected)
 
+    def test_mixed_binary_0(self):
+        test_prog = """
+                    int main(void) {
+                        return 
+                            1 + 3  % (1 + 2);
+                    }
+                    """
+        output = str(tackygen.tackify(parser.parse(lexer.lex(test_prog))))
+        expected = str(
+            ProgramTacky(
+                FuncTacky(
+                    "main",
+                    [
+                        BinaryTacky(
+                            BinaryOpTacky.ADD, ConstIntTacky(1), ConstIntTacky(2), VarTacky(".tmp0")
+                        ),
+                        BinaryTacky(
+                            BinaryOpTacky.MOD, ConstIntTacky(3), VarTacky(".tmp0"), VarTacky(".tmp1")
+                        ),
+                        BinaryTacky(
+                            BinaryOpTacky.ADD, ConstIntTacky(1), VarTacky(".tmp1"), VarTacky(".tmp2")
+                        ),
+                        ReturnTacky(VarTacky(".tmp2")),
+                    ],
+                )
+            )
+        )
+        self.assertEqual(output, expected)
+        
+

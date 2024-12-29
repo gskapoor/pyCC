@@ -167,3 +167,36 @@ class TestParser(unittest.TestCase):
             )
         )
         self.assertEqual(str(output), str(expected))
+
+    def test_mixed_binary_0(self):
+        test_prog = """
+                    int main(void) {
+                        return 
+                            1 + 3  % (1 + 2);
+                    }
+                    """
+        output = parser.parse(lexer.lex(test_prog))
+        expected = ProgramNode(
+            FunctionNode(
+                IdentifierNode("main"),
+                ReturnNode(
+                    BinaryExpressionNode(
+                        BinaryOperatorNode.ADD,
+                        ConstIntNode(1),
+                        BinaryExpressionNode(
+                            BinaryOperatorNode.MOD,
+                            ConstIntNode(3),
+                            BinaryExpressionNode(
+                                BinaryOperatorNode.ADD,
+                                ConstIntNode(1),
+                                ConstIntNode(2)
+                            )
+                        )
+                    )
+                ),
+            )
+        )
+        self.assertEqual(str(output), str(expected))
+
+
+

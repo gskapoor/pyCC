@@ -2,6 +2,8 @@ import unittest
 
 from pyCC.pyCmp.ASMNode import (
     AllocateStack,
+    BinaryASM,
+    BinaryOpASM,
     FunctionASM,
     PsuedoRegASM,
     IntASM,
@@ -14,6 +16,8 @@ from pyCC.pyCmp.ASMNode import (
     StackASM
 )
 from pyCC.pyCmp.tackyNode import (
+    BinaryOpTacky,
+    BinaryTacky,
     FuncTacky,
     ReturnTacky,
     UnaryOpTacky,
@@ -88,6 +92,21 @@ class AsmgenTest(unittest.TestCase):
         ])
         self.assertEqual(str(output), str(expected_output))
 
+    def test_function_binary_op(self):
+        test_input = FuncTacky("main", [
+            BinaryTacky(
+                BinaryOpTacky.ADD, VarTacky("obama"), VarTacky("obama"), VarTacky("jobama")
+            )
+        ])
+        output = asmgen.asmFromTacky(test_input)
+        expected_output = FunctionASM("main", [
+            AllocateStack(8),
+            MoveASM(StackASM(-4), RegisterASM(RegisterEnum.R10D)),
+            MoveASM(RegisterASM(RegisterEnum.R10D), StackASM(-8)),
+            MoveASM(StackASM(-4), RegisterASM(RegisterEnum.R10D)),
+            BinaryASM(BinaryOpASM.ADD, RegisterASM(RegisterEnum.R10D), StackASM(-8))
+        ])
+        self.assertEqual(str(output), str(expected_output))
 
 
 if __name__ == "__main__":

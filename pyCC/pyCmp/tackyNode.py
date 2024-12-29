@@ -13,6 +13,14 @@ class UnaryOpTacky(Enum):
     BITFLIP = auto()
 
 
+class BinaryOpTacky(Enum):
+    ADD = auto()
+    SUB = auto()
+    MUL = auto()
+    DIV = auto()
+    MOD = auto()
+
+
 class ValTacky(TackyNode):
     pass
 
@@ -53,6 +61,19 @@ class UnaryTacky(InstructionTacky):
 
     def __repr__(self):
         return f"Unary({self.op}, {repr(self.src)}, {repr(self.dst)})"
+
+
+class BinaryTacky(InstructionTacky):
+    def __init__(
+        self, op: BinaryOpTacky, left_val: ValTacky, right_val: ValTacky, dst: VarTacky
+    ):
+        self.op = op
+        self.left_val = left_val
+        self.right_val = right_val
+        self.dst = dst
+
+    def __repr__(self):
+        return f"Binary({self.op}, {repr(self.left_val)}, {repr(self.right_val)}, {repr(self.dst)})"
 
 
 class FuncTacky(TackyNode):

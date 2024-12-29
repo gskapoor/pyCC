@@ -9,7 +9,10 @@ class ASM:
 class RegisterEnum(Enum):
     RAX = auto()
     EAX = auto()
+    RDX = auto()
+    EDX = auto()
     R10D = auto()
+    R11D = auto()
 
 
 class OperandASM(ASM):
@@ -29,8 +32,14 @@ class RegisterASM(OperandASM):
                 return "%rax"
             case RegisterEnum.EAX:
                 return "%eax"
+            case RegisterEnum.RDX:
+                return "%rdx"
+            case RegisterEnum.EDX:
+                return "%edx"
             case RegisterEnum.R10D:
                 return "%r10d"
+            case RegisterEnum.R11D:
+                return "%r11d"
             case _:
                 raise TypeError("Invalid Register: ", self.val)
 
@@ -83,6 +92,35 @@ class MoveASM(InstructionASM):
         return f"movl {self.src.codegen()}, {self.dst.codegen()}"
 
 
+class BinaryOpASM(Enum):
+    ADD = auto()
+    SUB = auto()
+    MUL = auto()
+
+    def codegen(self):
+        if self == BinaryOpASM.ADD:
+            return "addl"
+        if self == BinaryOpASM.SUB:
+            return "subl"
+        if self == BinaryOpASM.MUL:
+            return "imull"
+        
+
+class BinaryASM(InstructionASM):
+
+    def __init__(self, op:BinaryOpASM, r_src: OperandASM, dst: OperandASM):
+        self.op = op
+        self.r_src = r_src
+        self.dst = dst
+
+    def __repr__(self):
+        return f"Binary({self.op}, {repr(self.r_src)}, {repr(self.dst)})"
+    
+    def codegen(self):
+        return f"{self.op.codegen()} {self.r_src.codegen()}, {self.dst.codegen()}"
+
+
+
 class UnaryOpASM(Enum):
     NEG = auto()
     BITFLIP = auto()
@@ -103,6 +141,24 @@ class UnaryASM(InstructionASM):
     
     def codegen(self):
         return f"{self.op.codegen()} {self.dst.codegen()}"
+    
+class IDivASM(InstructionASM):
+    def __init__(self, src: OperandASM):
+        self.src = src
+    
+    def __repr__(self):
+        return f"IDiv({repr(self.src)})"
+    
+    def codegen(self):
+        return f"idivl {self.src.codegen()}"
+    
+
+class CdqASM(InstructionASM):
+    def __repr__(self):
+        return "CDQ"
+    
+    def codegen(self):
+        return "cdq"
 
 
 class AllocateStack(InstructionASM):

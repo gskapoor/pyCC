@@ -55,6 +55,24 @@ class UnaryExpressionNode(ExpressionNode):
         return f"Unary({repr(self.op)}, {repr(self.expr)})"
 
 
+class BinaryOperatorNode(Enum):
+    ADD = auto()
+    SUB = auto()
+    MUL = auto()
+    DIV = auto()
+    MOD = auto()
+
+
+class BinaryExpressionNode(ExpressionNode):
+    def __init__(self, op: BinaryOperatorNode, left_expr: ExpressionNode, right_expr: ExpressionNode):
+        self.op = op
+        self.left_expr = left_expr
+        self.right_expr = right_expr
+
+    def __repr__(self):
+        return f"Binary({repr(self.op)}, {repr(self.left_expr)}, {repr(self.right_expr)})"
+
+
 class ReturnNode(ASTNode):
     def __init__(self, expression: ExpressionNode):
         self.expression = expression

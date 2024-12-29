@@ -1,6 +1,10 @@
 from .ASMNode import (
     AllocateStack,
+    BinaryASM,
+    BinaryOpASM,
+    CdqASM,
     FunctionASM,
+    IDivASM,
     IntASM,
     PsuedoRegASM,
     RegisterASM,
@@ -13,6 +17,8 @@ from .ASMNode import (
     UnaryOpASM,
 )
 from .tackyNode import (
+    BinaryOpTacky,
+    BinaryTacky,
     TackyNode,
     ConstIntTacky,
     VarTacky,
@@ -23,7 +29,13 @@ from .tackyNode import (
     UnaryOpTacky,
 )
 
-OP_TABLE = {UnaryOpTacky.NEG: UnaryOpASM.NEG, UnaryOpTacky.BITFLIP: UnaryOpASM.BITFLIP}
+OP_TABLE = {
+    UnaryOpTacky.NEG: UnaryOpASM.NEG,
+    UnaryOpTacky.BITFLIP: UnaryOpASM.BITFLIP,
+    BinaryOpTacky.ADD: BinaryOpASM.ADD,
+    BinaryOpTacky.SUB: BinaryOpASM.SUB,
+    BinaryOpTacky.MUL: BinaryOpASM.MUL,
+    }
 
 
 def asmFromTacky(node: TackyNode):
@@ -35,10 +47,29 @@ def asmFromTacky(node: TackyNode):
         case ReturnTacky(val=val):
             asm_val = asmFromTacky(val)
             return [MoveASM(asm_val, RegisterASM(RegisterEnum.EAX)), ReturnASM()]
-        case UnaryTacky(op=op, src=src, dst=dst):
+        case UnaryTacky(op=op, src=src, dst=dst_reg):
             return [
-                MoveASM(asmFromTacky(src), asmFromTacky(dst)),
-                UnaryASM(OP_TABLE[op], asmFromTacky(dst)),
+                MoveASM(asmFromTacky(src), asmFromTacky(dst_reg)),
+                UnaryASM(OP_TABLE[op], asmFromTacky(dst_reg)),
+            ]
+        case BinaryTacky(op=op, left_val=left_val, right_val=right_val, dst=dst):
+            if op == BinaryOpTacky.DIV or op == BinaryOpTacky.MOD:
+                dst_reg = RegisterEnum.EAX
+                if op == BinaryOpTacky.MOD:
+                    dst_reg = RegisterEnum.EDX
+
+                print("Here's the right vals: ")
+                print(right_val)
+                print(asmFromTacky(right_val))
+                return [
+                    MoveASM(asmFromTacky(left_val), RegisterASM(RegisterEnum.EAX)),
+                    CdqASM(),
+                    IDivASM(asmFromTacky(right_val)),
+                    MoveASM(RegisterASM(dst_reg), asmFromTacky(dst))
+                ]
+            return [
+                MoveASM(asmFromTacky(left_val), asmFromTacky(dst)),
+                BinaryASM(OP_TABLE[op], asmFromTacky(right_val), asmFromTacky(dst))
             ]
         case FuncTacky(identifier=identifier, instructions=instructions):
             res = [AllocateStack(0)]
@@ -86,6 +117,55 @@ def asmFromTacky(node: TackyNode):
                             new_dst = StackASM(-1 * sizeof_int * found[dst_id])
                             res.append(UnaryASM(cur_op, new_dst))
 
+                        case BinaryASM(op=cur_op, r_src=PsuedoRegASM(identifier=r_src_id),dst=PsuedoRegASM(identifier=dst_id)):
+                            if r_src_id not in found:
+                                num_vars += 1
+                                found[r_src_id] = num_vars
+                            if dst_id not in found:
+                                num_vars += 1
+                                found[dst_reg] = num_vars
+                            new_r_src = StackASM(-1 * sizeof_int * found[r_src_id])
+                            new_dst = StackASM(-1 * sizeof_int * found[dst_id])
+
+                            res.append(MoveASM(new_r_src, RegisterASM(RegisterEnum.R10D)))
+                            if cur_op == BinaryOpASM.MUL:
+                                res.append(MoveASM(new_dst, RegisterASM(RegisterEnum.R11D)))
+                                res.append(BinaryASM(cur_op, RegisterASM(RegisterEnum.R10D), RegisterASM(RegisterEnum.R11D)))
+                                res.append(MoveASM(RegisterASM(RegisterEnum.R11D), new_dst))
+                            else:
+                                res.append(BinaryASM(cur_op, RegisterASM(RegisterEnum.R10D), new_dst))
+                        case BinaryASM(op=cur_op, r_src=r_src, dst=PsuedoRegASM(identifier=dst_id)):
+                            if dst_id not in found:
+                                num_vars += 1
+                                found[dst_reg] = num_vars
+                            new_dst = StackASM(-1 * sizeof_int * found[dst_id])
+                            if cur_op == BinaryOpASM.MUL:
+                                res.append(MoveASM(new_dst, RegisterASM(RegisterEnum.R11D)))
+                                res.append(BinaryASM(cur_op, r_src, RegisterASM(RegisterEnum.R11D)))
+                                res.append(MoveASM(RegisterASM(RegisterEnum.R11D), new_dst))
+                            else:
+                                res.append(BinaryASM(cur_op, r_src, new_dst))
+
+                        case BinaryASM(op=cur_op, r_src=PsuedoRegASM(identifier=r_src_id),dst=dst_reg):
+                            if r_src_id not in found:
+                                num_vars += 1
+                                found[r_src_id] = num_vars
+                            new_r_src = StackASM(-1 * sizeof_int * found[r_src_id])
+
+                            res.append(BinaryASM(cur_op, new_r_src, dst_reg))
+
+                        case IDivASM(src=PsuedoRegASM(identifier=id)):
+                            if id not in found:
+                                num_vars += 1
+                                found[id] = num_vars
+                            res.append(IDivASM(StackASM(-1 * sizeof_int * found[id])))
+
+                        case IDivASM(src=IntASM(val=val)):
+                            res.append(MoveASM(IntASM(val), RegisterASM(RegisterEnum.R10D)))
+                            res.append(IDivASM(RegisterASM(RegisterEnum.R10D)))
+
+
+
                         case _:
                             res.append(ins)
             res[0].num_vals = num_vars * sizeof_int
@@ -96,7 +176,7 @@ def asmFromTacky(node: TackyNode):
             return ProgramASM(asmFromTacky(func))
 
         case _:
-            raise ValueError("Invalid TACKY Expr")
+            raise ValueError("Invalid TACKY Expr: ", node)
 
 
 def asmgenerate(tacky: TackyNode) -> str:

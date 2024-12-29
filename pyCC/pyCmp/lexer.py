@@ -13,6 +13,10 @@ class TokenType(Enum):
     BOPEN = auto()
     BCLOSE = auto()
     SEMICOLON = auto()
+    PLUS = auto()
+    ASTERISK = auto()
+    FSLASH = auto()
+    MODULUS = auto()
     DECREMENT = auto()
     NEGATE = auto()
     BITFLIP = auto()
@@ -29,6 +33,10 @@ TokenToRegex = {
     TokenType.BOPEN: re.compile(r"\{"),
     TokenType.BCLOSE: re.compile(r"\}"),
     TokenType.SEMICOLON: re.compile(r";"),
+    TokenType.PLUS: re.compile(r"\+"),
+    TokenType.ASTERISK: re.compile(r"\*"),
+    TokenType.FSLASH: re.compile(r"/"),
+    TokenType.MODULUS: re.compile(r"%"),
     TokenType.DECREMENT: re.compile(r"--"),
     TokenType.NEGATE: re.compile(r"-"),
     TokenType.BITFLIP: re.compile(r"~"),

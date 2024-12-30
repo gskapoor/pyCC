@@ -96,6 +96,11 @@ class BinaryOpASM(Enum):
     ADD = auto()
     SUB = auto()
     MUL = auto()
+    LSHIFT = auto()
+    RSHIFT = auto()
+    BAND = auto()
+    BOR = auto()
+    BXOR = auto()
 
     def codegen(self):
         if self == BinaryOpASM.ADD:
@@ -104,6 +109,17 @@ class BinaryOpASM(Enum):
             return "subl"
         if self == BinaryOpASM.MUL:
             return "imull"
+        if self == BinaryOpASM.LSHIFT:
+            return "sal"
+        if self == BinaryOpASM.RSHIFT:
+            return "sar"
+        if self == BinaryOpASM.BAND:
+            return "and"
+        if self == BinaryOpASM.BOR:
+            return "or"
+        if self == BinaryOpASM.BXOR:
+            return "xor"
+        raise NotImplementedError("Did not implement ", self.value)
         
 
 class BinaryASM(InstructionASM):

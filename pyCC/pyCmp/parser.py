@@ -30,15 +30,25 @@ BINOP_TOKENS = {
     TokenType.FSLASH: 50,
     TokenType.MODULUS: 50,
     TokenType.PLUS: 45,
-    TokenType.NEGATE: 45
+    TokenType.NEGATE: 45,
+    TokenType.LSHIFT: 40,
+    TokenType.RSHIFT: 40,
+    TokenType.BITAND: 25,
+    TokenType.BITOR: 15,
+    TokenType.BITXOR: 20,
 }
 
 BINOP_TOK_TO_AST = {
     TokenType.ASTERISK: BinaryOperatorNode.MUL,
-    TokenType.FSLASH: BinaryOperatorNode.DIV, 
+    TokenType.FSLASH: BinaryOperatorNode.DIV,
     TokenType.MODULUS: BinaryOperatorNode.MOD,
     TokenType.PLUS: BinaryOperatorNode.ADD,
-    TokenType.NEGATE: BinaryOperatorNode.SUB
+    TokenType.NEGATE: BinaryOperatorNode.SUB,
+    TokenType.LSHIFT: BinaryOperatorNode.LSHIFT,
+    TokenType.RSHIFT: BinaryOperatorNode.RSHIFT,
+    TokenType.BITAND: BinaryOperatorNode.BITAND,
+    TokenType.BITOR: BinaryOperatorNode.BITOR,
+    TokenType.BITXOR: BinaryOperatorNode.BITXOR,
 }
 
 class Parser:

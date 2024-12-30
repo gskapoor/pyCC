@@ -159,5 +159,27 @@ class TestTackygen(unittest.TestCase):
             )
         )
         self.assertEqual(output, expected)
-        
+
+    def test_bitop_binary(self):
+        test_prog = """
+                    int main(void) {
+                        return 
+                            1 << 2;
+                    }
+                    """
+        output = str(tackygen.tackify(parser.parse(lexer.lex(test_prog))))
+        expected = str(
+            ProgramTacky(
+                FuncTacky(
+                    "main",
+                    [
+                        BinaryTacky(
+                            BinaryOpTacky.LSHIFT, ConstIntTacky(1), ConstIntTacky(2), VarTacky(".tmp0")
+                        ),
+                        ReturnTacky(VarTacky(".tmp0")),
+                    ],
+                )
+            )
+        )
+        self.assertEqual(output, expected)
 

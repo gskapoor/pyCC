@@ -19,6 +19,11 @@ class BinaryOpTacky(Enum):
     MUL = auto()
     DIV = auto()
     MOD = auto()
+    LSHIFT = auto()
+    RSHIFT = auto()
+    BAND = auto()
+    BOR = auto()
+    BXOR = auto()
 
 
 class ValTacky(TackyNode):

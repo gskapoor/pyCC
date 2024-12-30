@@ -35,6 +35,11 @@ OP_TABLE = {
     BinaryOpTacky.ADD: BinaryOpASM.ADD,
     BinaryOpTacky.SUB: BinaryOpASM.SUB,
     BinaryOpTacky.MUL: BinaryOpASM.MUL,
+    BinaryOpTacky.LSHIFT: BinaryOpASM.LSHIFT,
+    BinaryOpTacky.RSHIFT: BinaryOpASM.RSHIFT,
+    BinaryOpTacky.BAND: BinaryOpASM.BAND,
+    BinaryOpTacky.BOR: BinaryOpASM.BOR,
+    BinaryOpTacky.BXOR: BinaryOpASM.BXOR,
     }
 
 

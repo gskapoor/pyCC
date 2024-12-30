@@ -22,6 +22,11 @@ OP_TABLE = {
     BinaryOperatorNode.MUL: BinaryOpTacky.MUL,
     BinaryOperatorNode.DIV: BinaryOpTacky.DIV,
     BinaryOperatorNode.MOD: BinaryOpTacky.MOD,
+    BinaryOperatorNode.LSHIFT: BinaryOpTacky.LSHIFT,
+    BinaryOperatorNode.RSHIFT: BinaryOpTacky.RSHIFT,
+    BinaryOperatorNode.BITAND: BinaryOpTacky.BAND,
+    BinaryOperatorNode.BITOR: BinaryOpTacky.BOR,
+    BinaryOperatorNode.BITXOR: BinaryOpTacky.BXOR,
 }
 
 class TackyGen:

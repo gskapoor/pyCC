@@ -61,6 +61,11 @@ class BinaryOperatorNode(Enum):
     MUL = auto()
     DIV = auto()
     MOD = auto()
+    LSHIFT = auto()
+    RSHIFT = auto()
+    BITAND = auto()
+    BITOR = auto()
+    BITXOR = auto()
 
 
 class BinaryExpressionNode(ExpressionNode):

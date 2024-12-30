@@ -58,9 +58,6 @@ def asmFromTacky(node: TackyNode):
                 if op == BinaryOpTacky.MOD:
                     dst_reg = RegisterEnum.EDX
 
-                print("Here's the right vals: ")
-                print(right_val)
-                print(asmFromTacky(right_val))
                 return [
                     MoveASM(asmFromTacky(left_val), RegisterASM(RegisterEnum.EAX)),
                     CdqASM(),

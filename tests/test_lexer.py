@@ -37,6 +37,28 @@ class TestLexer(unittest.TestCase):
         result = lexer.lex("%")
         self.assertEqual(result, [(lexer.TokenType.MODULUS, "%")])
 
+    def test_bitand_parsing(self):
+        result = lexer.lex("&")
+        self.assertEqual(result, [(lexer.TokenType.BITAND, "&")])
+
+    def test_bitor_parsing(self):
+            result = lexer.lex("|")
+            self.assertEqual(result, [(lexer.TokenType.BITOR, "|")])
+
+    def test_bitxor_parsing(self):
+            result = lexer.lex("^")
+            self.assertEqual(result, [(lexer.TokenType.BITXOR, "^")])
+
+    def test_lshift_parsing(self):
+            result = lexer.lex("<<")
+            self.assertEqual(result, [(lexer.TokenType.LSHIFT, "<<")])
+
+    def test_rshift_parsing(self):
+            result = lexer.lex(">>")
+            self.assertEqual(result, [(lexer.TokenType.RSHIFT, ">>")])
+
+
+
 
 if __name__ == "__main__":
     unittest.main()

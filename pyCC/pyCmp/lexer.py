@@ -18,6 +18,11 @@ class TokenType(Enum):
     FSLASH = auto()
     MODULUS = auto()
     DECREMENT = auto()
+    LSHIFT = auto()
+    RSHIFT = auto()
+    BITAND = auto()
+    BITXOR = auto()
+    BITOR = auto()
     NEGATE = auto()
     BITFLIP = auto()
     IDENTIFIER = auto()
@@ -38,6 +43,11 @@ TokenToRegex = {
     TokenType.FSLASH: re.compile(r"/"),
     TokenType.MODULUS: re.compile(r"%"),
     TokenType.DECREMENT: re.compile(r"--"),
+    TokenType.LSHIFT: re.compile(r"<<"),
+    TokenType.RSHIFT: re.compile(r">>"),
+    TokenType.BITAND: re.compile(r"&"),
+    TokenType.BITXOR: re.compile(r"\^"),
+    TokenType.BITOR: re.compile(r"\|"),
     TokenType.NEGATE: re.compile(r"-"),
     TokenType.BITFLIP: re.compile(r"~"),
     TokenType.IDENTIFIER: re.compile(r"[a-zA-Z_]\w*\b"),

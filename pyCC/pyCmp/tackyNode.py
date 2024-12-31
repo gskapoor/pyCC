@@ -11,6 +11,7 @@ class TackyNode:
 class UnaryOpTacky(Enum):
     NEG = auto()
     BITFLIP = auto()
+    NOT = auto()
 
 
 class BinaryOpTacky(Enum):
@@ -24,6 +25,14 @@ class BinaryOpTacky(Enum):
     BAND = auto()
     BOR = auto()
     BXOR = auto()
+    GE = auto()
+    GEQ = auto()
+    LE = auto()
+    LEQ = auto()
+    EQ = auto()
+    NEQ = auto()
+    LAND = auto()
+    LOR = auto()
 
 
 class ValTacky(TackyNode):

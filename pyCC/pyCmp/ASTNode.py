@@ -66,6 +66,14 @@ class BinaryOperatorNode(Enum):
     BITAND = auto()
     BITOR = auto()
     BITXOR = auto()
+    GE = auto()
+    GEQ = auto()
+    LE = auto()
+    LEQ = auto()
+    EQ = auto()
+    NEQ = auto()
+    LAND = auto()
+    LOR = auto()
 
 
 class BinaryExpressionNode(ExpressionNode):

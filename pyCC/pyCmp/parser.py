@@ -49,6 +49,14 @@ BINOP_TOK_TO_AST = {
     TokenType.BITAND: BinaryOperatorNode.BITAND,
     TokenType.BITOR: BinaryOperatorNode.BITOR,
     TokenType.BITXOR: BinaryOperatorNode.BITXOR,
+    TokenType.GE: BinaryOperatorNode.GE,
+    TokenType.GEQ: BinaryOperatorNode.GEQ,
+    TokenType.LE: BinaryOperatorNode.LE,
+    TokenType.LEQ: BinaryOperatorNode.LEQ,
+    TokenType.EQ: BinaryOperatorNode.EQ,
+    TokenType.NEQ: BinaryOperatorNode.NEQ,
+    TokenType.LAND: BinaryOperatorNode.LAND,
+    TokenType.LOR: BinaryOperatorNode.LOR,
 }
 
 class Parser:

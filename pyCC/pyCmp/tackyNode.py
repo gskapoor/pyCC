@@ -96,15 +96,16 @@ class CopyTacky(InstructionTacky):
         self.dst = dst
 
     def __repr__(self):
-        raise NotImplementedError()
-    
+        return f"Copy({self.src}, {self.dst})"
 
-class Jump(InstructionTacky):
+
+class JumpTacky(InstructionTacky):
     def __init__(self, target: str):
         self.target = target
 
     def __repr__(self):
-        raise NotImplementedError()
+        return f"Jump({self.target})"
+
 
 class JumpIfZero(InstructionTacky):
     def __init__(self, condition: ValTacky, target: str):
@@ -112,7 +113,8 @@ class JumpIfZero(InstructionTacky):
         self.target = target
 
     def __repr__(self):
-        raise NotImplementedError()
+        return f"JumpIfZero({repr(self.condition)}, {self.target})"
+
 
 class JumpIfNotZero(InstructionTacky):
     def __init__(self, condition: ValTacky, target: str):
@@ -120,7 +122,7 @@ class JumpIfNotZero(InstructionTacky):
         self.target = target
 
     def __repr__(self):
-        raise NotImplementedError()
+        return f"JumpIfNotZero({repr(self.condition)}, {self.target})"
 
 
 class Label(InstructionTacky):
@@ -128,7 +130,7 @@ class Label(InstructionTacky):
         self.name = name
 
     def __repr__(self):
-        raise NotImplementedError()
+        return f"Label({self.name})"
 
 
 class FuncTacky(TackyNode):

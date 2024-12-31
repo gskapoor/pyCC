@@ -81,6 +81,45 @@ class BinaryTacky(InstructionTacky):
         return f"Binary({self.op}, {repr(self.left_val)}, {repr(self.right_val)}, {repr(self.dst)})"
 
 
+class CopyTacky(InstructionTacky):
+    def __init__(self, src: ValTacky, dst: ValTacky):
+        self.src = src
+        self.dst = dst
+
+    def __repr__(self):
+        raise NotImplementedError()
+    
+
+class Jump(InstructionTacky):
+    def __init__(self, target: str):
+        self.target = target
+
+    def __repr__(self):
+        raise NotImplementedError()
+
+class JumpIfZero(InstructionTacky):
+    def __init__(self, condition: ValTacky, target: str):
+        self.target = target
+
+    def __repr__(self):
+        raise NotImplementedError()
+
+class JumpIfNotZero(InstructionTacky):
+    def __init__(self, condition: ValTacky, target: str):
+        self.target = target
+
+    def __repr__(self):
+        raise NotImplementedError()
+
+
+class Label(InstructionTacky):
+    def __init__(self, name: str):
+        self.name = name
+
+    def __repr__(self):
+        raise NotImplementedError()
+
+
 class FuncTacky(TackyNode):
     def __init__(self, identifier: str, instructions: List[InstructionTacky]):
         self.identifier = identifier

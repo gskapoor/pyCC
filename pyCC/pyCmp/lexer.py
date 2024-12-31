@@ -26,7 +26,7 @@ class TokenType(Enum):
     DECREMENT = auto()
     LSHIFT = auto()
     RSHIFT = auto()
-    GR = auto()
+    GE = auto()
     LE = auto()
     BITAND = auto()
     BITXOR = auto()
@@ -59,7 +59,7 @@ TokenToRegex = {
     TokenType.NEQ: re.compile(r"!="),
     TokenType.LAND: re.compile(r"&&"),
     TokenType.LOR: re.compile(r"\|\|"),
-    TokenType.GR: re.compile(r">"),
+    TokenType.GE: re.compile(r">"),
     TokenType.LE: re.compile(r"<"),
     TokenType.BITAND: re.compile(r"&"),
     TokenType.BITXOR: re.compile(r"\^"),

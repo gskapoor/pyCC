@@ -73,7 +73,7 @@ class TestLexer(unittest.TestCase):
             (lexer.TokenType.LOR, "||"),
             (lexer.TokenType.LAND, "&&"),
             (lexer.TokenType.GEQ, ">="),
-            (lexer.TokenType.GR, ">"),
+            (lexer.TokenType.GE, ">"),
             (lexer.TokenType.LEQ, "<="),
             (lexer.TokenType.LE, "<"),
             (lexer.TokenType.EQ, "=="),

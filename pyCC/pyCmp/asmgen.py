@@ -131,9 +131,13 @@ def asmFromTacky(node: TackyNode):
 
                             res.append(MoveASM(new_r_src, RegisterASM(RegisterEnum.R10D)))
                             if cur_op == BinaryOpASM.MUL:
+                                ## TODO: rename the src/dst parameters
                                 res.append(MoveASM(new_dst, RegisterASM(RegisterEnum.R11D)))
                                 res.append(BinaryASM(cur_op, RegisterASM(RegisterEnum.R10D), RegisterASM(RegisterEnum.R11D)))
                                 res.append(MoveASM(RegisterASM(RegisterEnum.R11D), new_dst))
+                            elif cur_op in {BinaryOpASM.LSHIFT, BinaryOpASM.RSHIFT}:
+                                res.append(MoveASM(new_r_src, RegisterASM(RegisterEnum.ECX)))
+                                res.append(BinaryASM(cur_op, RegisterASM(RegisterEnum.CL), new_dst))
                             else:
                                 res.append(BinaryASM(cur_op, RegisterASM(RegisterEnum.R10D), new_dst))
                         case BinaryASM(op=cur_op, r_src=r_src, dst=PsuedoRegASM(identifier=dst_id)):
@@ -145,6 +149,9 @@ def asmFromTacky(node: TackyNode):
                                 res.append(MoveASM(new_dst, RegisterASM(RegisterEnum.R11D)))
                                 res.append(BinaryASM(cur_op, r_src, RegisterASM(RegisterEnum.R11D)))
                                 res.append(MoveASM(RegisterASM(RegisterEnum.R11D), new_dst))
+                            elif cur_op in {BinaryOpASM.LSHIFT, BinaryOpASM.RSHIFT}:
+                                res.append(MoveASM(r_src, RegisterASM(RegisterEnum.ECX)))
+                                res.append(BinaryASM(cur_op, RegisterASM(RegisterEnum.CL), new_dst))
                             else:
                                 res.append(BinaryASM(cur_op, r_src, new_dst))
 

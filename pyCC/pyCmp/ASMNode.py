@@ -9,6 +9,9 @@ class ASM:
 class RegisterEnum(Enum):
     RAX = auto()
     EAX = auto()
+    RCX = auto()
+    ECX = auto()
+    CL = auto()
     RDX = auto()
     EDX = auto()
     R10D = auto()
@@ -32,6 +35,12 @@ class RegisterASM(OperandASM):
                 return "%rax"
             case RegisterEnum.EAX:
                 return "%eax"
+            case RegisterEnum.RCX:
+                return "%rcx"
+            case RegisterEnum.ECX:
+                return "%ecx"
+            case RegisterEnum.CL:
+                return "%cl"
             case RegisterEnum.RDX:
                 return "%rdx"
             case RegisterEnum.EDX:

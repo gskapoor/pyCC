@@ -108,6 +108,7 @@ class Jump(InstructionTacky):
 
 class JumpIfZero(InstructionTacky):
     def __init__(self, condition: ValTacky, target: str):
+        self.condition = condition
         self.target = target
 
     def __repr__(self):
@@ -115,6 +116,7 @@ class JumpIfZero(InstructionTacky):
 
 class JumpIfNotZero(InstructionTacky):
     def __init__(self, condition: ValTacky, target: str):
+        self.condition = condition
         self.target = target
 
     def __repr__(self):

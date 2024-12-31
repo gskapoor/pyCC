@@ -268,6 +268,27 @@ class TestParser(unittest.TestCase):
 
         self.assertEqual(str(output), str(expected))
 
+    def test_log_not(self):
+        test_prog = """
+                    int main(void){
+                        return !1;
+                    }
+                    """
+        output = parser.parse(lexer.lex(test_prog))
+        expected = ProgramNode(
+            FunctionNode(
+                IdentifierNode("main"),
+                ReturnNode(
+                    UnaryExpressionNode(
+                        UnaryOperatorNode.NOT, ConstIntNode(1)
+                    )
+                ),
+            )
+        )
+
+        self.assertEqual(str(output), str(expected))
+
+
 
 
 

@@ -182,6 +182,10 @@ class Parser:
             ## Unary time
             expr = self.parseFactor()
             return UnaryExpressionNode(UnaryOperatorNode.BITFLIP, expr)
+        elif self.consumeTokens(TokenType.NOT):
+            ## Unary time
+            expr = self.parseFactor()
+            return UnaryExpressionNode(UnaryOperatorNode.NOT, expr)
         elif self.consumeTokens(TokenType.POPEN):
             expr = self.parseExpression()
             if not self.consumeTokens(TokenType.PCLOSE):

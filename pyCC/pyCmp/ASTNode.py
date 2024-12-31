@@ -44,6 +44,7 @@ class ConstIntNode(ExpressionNode):
 class UnaryOperatorNode(Enum):
     NEG = auto()
     BITFLIP = auto()
+    NOT = auto()
 
 
 class UnaryExpressionNode(ExpressionNode):

@@ -66,7 +66,7 @@ class TestLexer(unittest.TestCase):
         self.assertEqual(result, [(lexer.TokenType.GEQ, ">=")])
 
     def test_logical_ops(self):
-        test_input = "|| && >= > <= < == !="
+        test_input = "|| && >= > <= < == != !"
         result = lexer.lex(test_input)
 
         expected = [
@@ -78,6 +78,7 @@ class TestLexer(unittest.TestCase):
             (lexer.TokenType.LE, "<"),
             (lexer.TokenType.EQ, "=="),
             (lexer.TokenType.NEQ, "!="),
+            (lexer.TokenType.NOT, "!"),
         ]
 
         self.assertEqual(result, expected)

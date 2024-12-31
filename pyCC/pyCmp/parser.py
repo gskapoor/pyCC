@@ -36,6 +36,14 @@ BINOP_TOKENS = {
     TokenType.BITAND: 25,
     TokenType.BITOR: 15,
     TokenType.BITXOR: 20,
+    TokenType.GE: 35,
+    TokenType.GEQ: 35,
+    TokenType.LE: 35,
+    TokenType.LEQ: 35,
+    TokenType.EQ: 30,
+    TokenType.NEQ: 30,
+    TokenType.LAND: 10,
+    TokenType.LOR: 5,
 }
 
 BINOP_TOK_TO_AST = {

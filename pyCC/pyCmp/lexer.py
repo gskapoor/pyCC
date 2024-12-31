@@ -2,8 +2,14 @@ from enum import Enum, auto
 import re
 from typing import List, Tuple
 
-
+## TODO: Fix the ordering issues, make them make more sense
 class TokenType(Enum):
+    GEQ = auto()
+    LEQ = auto()
+    EQ = auto()
+    NEQ = auto()
+    LAND = auto()
+    LOR = auto()
     CONSTINT = auto()
     INT = auto()
     VOID = auto()
@@ -20,6 +26,8 @@ class TokenType(Enum):
     DECREMENT = auto()
     LSHIFT = auto()
     RSHIFT = auto()
+    GR = auto()
+    LE = auto()
     BITAND = auto()
     BITXOR = auto()
     BITOR = auto()
@@ -45,6 +53,14 @@ TokenToRegex = {
     TokenType.DECREMENT: re.compile(r"--"),
     TokenType.LSHIFT: re.compile(r"<<"),
     TokenType.RSHIFT: re.compile(r">>"),
+    TokenType.GEQ: re.compile(r">="),
+    TokenType.LEQ: re.compile(r"<="),
+    TokenType.EQ: re.compile(r"=="),
+    TokenType.NEQ: re.compile(r"!="),
+    TokenType.LAND: re.compile(r"&&"),
+    TokenType.LOR: re.compile(r"\|\|"),
+    TokenType.GR: re.compile(r">"),
+    TokenType.LE: re.compile(r"<"),
     TokenType.BITAND: re.compile(r"&"),
     TokenType.BITXOR: re.compile(r"\^"),
     TokenType.BITOR: re.compile(r"\|"),
@@ -81,6 +97,6 @@ def lex(input_str: str) -> List[Tuple[TokenType, str]]:
                 input_str = input_str[len(match[0]) :]
                 break
         if not found:
-            raise ValueError("INVALID LEX")
+            raise ValueError("INVALID LEX: ", input_str)
         input_str = input_str.strip()
     return res

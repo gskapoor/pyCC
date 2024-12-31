@@ -3,6 +3,10 @@ import pyCC.pyCmp.lexer as lexer
 
 
 class TestLexer(unittest.TestCase):
+    def test_num_tokens(self):
+        ## Make sure that I didn't forget anything
+        self.assertEqual(len(set(lexer.TokenType)), len(set(lexer.TokenToRegex)))
+
     def test_int_lexing(self):
         result = lexer.lex("int")
         self.assertEqual(result, [(lexer.TokenType.INT, "int")])
@@ -42,22 +46,41 @@ class TestLexer(unittest.TestCase):
         self.assertEqual(result, [(lexer.TokenType.BITAND, "&")])
 
     def test_bitor_parsing(self):
-            result = lexer.lex("|")
-            self.assertEqual(result, [(lexer.TokenType.BITOR, "|")])
+        result = lexer.lex("|")
+        self.assertEqual(result, [(lexer.TokenType.BITOR, "|")])
 
     def test_bitxor_parsing(self):
-            result = lexer.lex("^")
-            self.assertEqual(result, [(lexer.TokenType.BITXOR, "^")])
+        result = lexer.lex("^")
+        self.assertEqual(result, [(lexer.TokenType.BITXOR, "^")])
 
     def test_lshift_parsing(self):
-            result = lexer.lex("<<")
-            self.assertEqual(result, [(lexer.TokenType.LSHIFT, "<<")])
+        result = lexer.lex("<<")
+        self.assertEqual(result, [(lexer.TokenType.LSHIFT, "<<")])
 
     def test_rshift_parsing(self):
-            result = lexer.lex(">>")
-            self.assertEqual(result, [(lexer.TokenType.RSHIFT, ">>")])
+        result = lexer.lex(">>")
+        self.assertEqual(result, [(lexer.TokenType.RSHIFT, ">>")])
 
+    def test_geq(self):
+        result = lexer.lex(">=")
+        self.assertEqual(result, [(lexer.TokenType.GEQ, ">=")])
 
+    def test_logical_ops(self):
+        test_input = "|| && >= > <= < == !="
+        result = lexer.lex(test_input)
+
+        expected = [
+            (lexer.TokenType.LOR, "||"),
+            (lexer.TokenType.LAND, "&&"),
+            (lexer.TokenType.GEQ, ">="),
+            (lexer.TokenType.GR, ">"),
+            (lexer.TokenType.LEQ, "<="),
+            (lexer.TokenType.LE, "<"),
+            (lexer.TokenType.EQ, "=="),
+            (lexer.TokenType.NEQ, "!="),
+        ]
+
+        self.assertEqual(result, expected)
 
 
 if __name__ == "__main__":

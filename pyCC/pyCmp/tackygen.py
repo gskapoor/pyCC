@@ -79,17 +79,17 @@ class TackyGen:
                 new_var = self.genVariable()
 
                 left_src, instructions = self.emit_tacky(left_expr)
-                instructions.append(JumpIfNotZero(left_src, LabelTacky(f"or_true({self.labels_used})")))
+                instructions.append(JumpIfNotZero(left_src, LabelTacky(f"or_true{self.labels_used}")))
 
                 right_src, right_instructions = self.emit_tacky(right_expr)
                 instructions += right_instructions
-                instructions.append(JumpIfNotZero(right_src, LabelTacky(f"or_true({self.labels_used})")))
+                instructions.append(JumpIfNotZero(right_src, LabelTacky(f"or_true{self.labels_used}")))
                 instructions.append(CopyTacky(ConstIntTacky(0), new_var))
-                instructions.append(JumpTacky(LabelTacky(f"or_end({self.labels_used})")))
+                instructions.append(JumpTacky(LabelTacky(f"or_end{self.labels_used}")))
 
-                instructions.append(LabelTacky(f"or_true({self.labels_used})"))
+                instructions.append(LabelTacky(f"or_true{self.labels_used}"))
                 instructions.append(CopyTacky(ConstIntTacky(1), new_var))
-                instructions.append(LabelTacky(f"or_end({self.labels_used})"))
+                instructions.append(LabelTacky(f"or_end{self.labels_used}"))
 
                 self.labels_used += 1
                 return new_var, instructions
@@ -99,17 +99,17 @@ class TackyGen:
                 new_var = self.genVariable()
 
                 left_src, instructions = self.emit_tacky(left_expr)
-                instructions.append(JumpIfZero(left_src, LabelTacky(f"and_false({self.labels_used})")))
+                instructions.append(JumpIfZero(left_src, LabelTacky(f"and_false{self.labels_used}")))
 
                 right_src, right_instructions = self.emit_tacky(right_expr)
                 instructions += right_instructions
-                instructions.append(JumpIfZero(right_src, LabelTacky(f"and_false({self.labels_used})")))
+                instructions.append(JumpIfZero(right_src, LabelTacky(f"and_false{self.labels_used}")))
                 instructions.append(CopyTacky(ConstIntTacky(1), new_var))
-                instructions.append(JumpTacky(LabelTacky(f"and_end({self.labels_used})")))
+                instructions.append(JumpTacky(LabelTacky(f"and_end{self.labels_used}")))
 
-                instructions.append(LabelTacky(f"and_false({self.labels_used})"))
+                instructions.append(LabelTacky(f"and_false{self.labels_used}"))
                 instructions.append(CopyTacky(ConstIntTacky(0), new_var))
-                instructions.append(LabelTacky(f"and_end({self.labels_used})"))
+                instructions.append(LabelTacky(f"and_end{self.labels_used}"))
 
                 self.labels_used += 1
                 return new_var, instructions

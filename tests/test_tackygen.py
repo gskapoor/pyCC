@@ -221,13 +221,13 @@ class TestTackygen(unittest.TestCase):
         gen = tackygen.TackyGen()
         _, res = gen.emit_tacky(return_ast)
         expected = [
-            JumpIfZero(ConstIntTacky(1), LabelTacky("and_false(0)")),
-            JumpIfZero(ConstIntTacky(2), LabelTacky("and_false(0)")),
+            JumpIfZero(ConstIntTacky(1), LabelTacky("and_false0")),
+            JumpIfZero(ConstIntTacky(2), LabelTacky("and_false0")),
             CopyTacky(ConstIntTacky(1), VarTacky(".tmp0")),
-            JumpTacky(LabelTacky("and_end(0)")),
-            LabelTacky("and_false(0)"),
+            JumpTacky(LabelTacky("and_end0")),
+            LabelTacky("and_false0"),
             CopyTacky(ConstIntTacky(0), VarTacky(".tmp0")),
-            LabelTacky("and_end(0)")
+            LabelTacky("and_end0")
         ]
 
         self.assertEqual(str(res), str(expected))
@@ -239,13 +239,13 @@ class TestTackygen(unittest.TestCase):
         gen = tackygen.TackyGen()
         _, res = gen.emit_tacky(return_ast)
         expected = [
-            JumpIfNotZero(ConstIntTacky(1), LabelTacky("or_true(0)")),
-            JumpIfNotZero(ConstIntTacky(2), LabelTacky("or_true(0)")),
+            JumpIfNotZero(ConstIntTacky(1), LabelTacky("or_true0")),
+            JumpIfNotZero(ConstIntTacky(2), LabelTacky("or_true0")),
             CopyTacky(ConstIntTacky(0), VarTacky(".tmp0")),
-            JumpTacky(LabelTacky("or_end(0)")),
-            LabelTacky("or_true(0)"),
+            JumpTacky(LabelTacky("or_end0")),
+            LabelTacky("or_true0"),
             CopyTacky(ConstIntTacky(1), VarTacky(".tmp0")),
-            LabelTacky("or_end(0)")
+            LabelTacky("or_end0")
         ]
 
         self.assertEqual(str(res), str(expected))
@@ -263,13 +263,13 @@ class TestTackygen(unittest.TestCase):
         _, res = gen.emit_tacky(return_ast)
         expected = [
             BinaryTacky(BinaryOpTacky.EQ, ConstIntTacky(1), ConstIntTacky(2), VarTacky(".tmp1")),
-            JumpIfNotZero(VarTacky(".tmp1"), LabelTacky("or_true(0)")),
-            JumpIfNotZero(ConstIntTacky(3), LabelTacky("or_true(0)")),
+            JumpIfNotZero(VarTacky(".tmp1"), LabelTacky("or_true0")),
+            JumpIfNotZero(ConstIntTacky(3), LabelTacky("or_true0")),
             CopyTacky(ConstIntTacky(0), VarTacky(".tmp0")),
-            JumpTacky(LabelTacky("or_end(0)")),
-            LabelTacky("or_true(0)"),
+            JumpTacky(LabelTacky("or_end0")),
+            LabelTacky("or_true0"),
             CopyTacky(ConstIntTacky(1), VarTacky(".tmp0")),
-            LabelTacky("or_end(0)")
+            LabelTacky("or_end0")
         ]
 
         self.assertEqual(str(res), str(expected))

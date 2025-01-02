@@ -71,6 +71,9 @@ class PsuedoRegASM(OperandASM):
 
     def __repr__(self):
         return f"PsuedoReg({self.identifier})"
+    
+    def codegen(self):
+        raise Exception("You should not be generating assembly from a PsuedoRegister")
 
 
 class StackASM(OperandASM):
@@ -222,11 +225,14 @@ class ReturnASM(InstructionASM):
 
 class CmpASM(InstructionASM):
     def __init__(self, left_operand: OperandASM, right_operand: OperandASM):
-        self.src = left_operand
-        self.dst = right_operand
+        self.left_operand = left_operand
+        self.right_operand = right_operand
 
     def __repr__(self):
-        return f"CMP({repr(self.src)}, {repr(self.dst)})"
+        return f"CMP({repr(self.left_operand)}, {repr(self.right_operand)})"
+    
+    def codegen(self):
+        return f"cmpl {self.left_operand.codegen()}, {self.right_operand.codegen()}"
 
 
 class LabelASM(InstructionASM):
@@ -235,15 +241,20 @@ class LabelASM(InstructionASM):
 
     def __repr__(self):
         return f"Label({self.name})"
+    
+    def codegen(self):
+        return f".L{self.name}:"
 
 
 class JumpASM(InstructionASM):
-    def __init__(self, name: str):
-        self.name = name
+    def __init__(self, dest: str):
+        self.dest = dest
 
     def __repr__(self):
-        return f"JMP({self.name})"
+        return f"JMP({self.dest})"
 
+    def codegen(self):
+        return f"jmp {self.dest}"
 
 class CondFlags(Enum):
     E = auto()
@@ -252,6 +263,22 @@ class CondFlags(Enum):
     GE = auto()
     L = auto()
     LE = auto()
+
+    def codegen(self):
+        if self == CondFlags.E:
+            return "e"
+        if self == CondFlags.NE:
+            return "ne"
+        if self == CondFlags.G:
+            return "g"
+        if self == CondFlags.GE:
+            return "ge"
+        if self == CondFlags.L:
+            return "l"
+        if self == CondFlags.LE:
+            return "le"
+        
+        raise Exception("Invalid Condition Flag")
 
 
 class JumpCCASM(InstructionASM):
@@ -262,6 +289,8 @@ class JumpCCASM(InstructionASM):
     def __repr__(self):
         return f"JMPCC({self.cond_code}, {self.name})"
 
+    def codegen(self):
+        return f"j{self.cond_code.codegen()} {self.name}"
 
 class SetCCASM(InstructionASM):
     def __init__(self, cond_code: CondFlags, src: OperandASM):

@@ -99,8 +99,16 @@ class CopyTacky(InstructionTacky):
         return f"Copy({self.src}, {self.dst})"
 
 
+class LabelTacky(InstructionTacky):
+    def __init__(self, name: str):
+        self.name = name
+
+    def __repr__(self):
+        return f"Label({self.name})"
+
+
 class JumpTacky(InstructionTacky):
-    def __init__(self, target: str):
+    def __init__(self, target: LabelTacky):
         self.target = target
 
     def __repr__(self):
@@ -108,7 +116,7 @@ class JumpTacky(InstructionTacky):
 
 
 class JumpIfZero(InstructionTacky):
-    def __init__(self, condition: ValTacky, target: str):
+    def __init__(self, condition: ValTacky, target: LabelTacky):
         self.condition = condition
         self.target = target
 
@@ -117,20 +125,12 @@ class JumpIfZero(InstructionTacky):
 
 
 class JumpIfNotZero(InstructionTacky):
-    def __init__(self, condition: ValTacky, target: str):
+    def __init__(self, condition: ValTacky, target: LabelTacky):
         self.condition = condition
         self.target = target
 
     def __repr__(self):
         return f"JumpIfNotZero({repr(self.condition)}, {self.target})"
-
-
-class LabelTacky(InstructionTacky):
-    def __init__(self, name: str):
-        self.name = name
-
-    def __repr__(self):
-        return f"Label({self.name})"
 
 
 class FuncTacky(TackyNode):

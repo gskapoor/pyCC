@@ -23,6 +23,7 @@ from pyCC.pyCmp.tackyNode import (
     BinaryTacky,
     FuncTacky,
     JumpIfZero,
+    LabelTacky,
     ReturnTacky,
     UnaryOpTacky,
     UnaryTacky,
@@ -113,11 +114,11 @@ class AsmgenTest(unittest.TestCase):
         self.assertEqual(str(output), str(expected_output))
 
     def test_jz(self):
-        test_input = JumpIfZero(ConstIntTacky(0), "obama")
+        test_input = JumpIfZero(ConstIntTacky(0), LabelTacky("obama"))
         output = asmgen.asmFromTacky(test_input)
         expected_output = [
             CmpASM(IntASM(0), IntASM(0)),
-            JumpCCASM(CondFlags.E, "obama")
+            JumpCCASM(CondFlags.E, ".Lobama")
         ]
         self.assertEqual(str(output), str(expected_output))
 

@@ -73,7 +73,7 @@ def asmFromTacky(node: TackyNode):
             asm_val = asmFromTacky(val)
             return [MoveASM(asm_val, RegisterASM(RegisterEnum.EAX)), ReturnASM()]
         case CopyTacky(src=src, dst=dst):
-            return [MoveASM(src, dst)]
+            return [MoveASM(asmFromTacky(src), asmFromTacky(dst))]
         case UnaryTacky(op=op, src=src, dst=dst) if op == UnaryOpTacky.NOT:
             return [
                 CmpASM(IntASM(0), asmFromTacky(src)),
@@ -109,19 +109,19 @@ def asmFromTacky(node: TackyNode):
                 MoveASM(asmFromTacky(left_val), asmFromTacky(dst)),
                 BinaryASM(OP_TABLE[op], asmFromTacky(right_val), asmFromTacky(dst)),
             ]
-        case JumpTacky(target=target):
+        case JumpTacky(target=LabelTacky(name=name)):
             return [
-                JumpASM(target)
+                JumpASM(f".L{name}")
             ]
-        case JumpIfZero(condition=condition, target=target):
+        case JumpIfZero(condition=condition, target=LabelTacky(name=name)):
             return [
                 CmpASM(IntASM(0), asmFromTacky(condition)),
-                JumpCCASM(CondFlags.E, target),
+                JumpCCASM(CondFlags.E, f".L{name}"),
             ]
-        case JumpIfNotZero(condition=condition, target=target):
+        case JumpIfNotZero(condition=condition, target=LabelTacky(name=name)):
             return [
                 CmpASM(IntASM(0), asmFromTacky(condition)),
-                JumpCCASM(CondFlags.NE, target),
+                JumpCCASM(CondFlags.NE, f".L{name}"),
             ]
         case LabelTacky(name=name):
             return [LabelASM(name)]

@@ -3,13 +3,19 @@ from .ASMNode import (
     BinaryASM,
     BinaryOpASM,
     CdqASM,
+    CmpASM,
+    CondFlags,
     FunctionASM,
     IDivASM,
     IntASM,
+    JumpASM,
+    JumpCCASM,
+    LabelASM,
     PsuedoRegASM,
     RegisterASM,
     RegisterEnum,
     ReturnASM,
+    SetCCASM,
     StackASM,
     UnaryASM,
     MoveASM,
@@ -19,6 +25,11 @@ from .ASMNode import (
 from .tackyNode import (
     BinaryOpTacky,
     BinaryTacky,
+    CopyTacky,
+    JumpIfNotZero,
+    JumpIfZero,
+    JumpTacky,
+    LabelTacky,
     TackyNode,
     ConstIntTacky,
     VarTacky,
@@ -40,7 +51,16 @@ OP_TABLE = {
     BinaryOpTacky.BAND: BinaryOpASM.BAND,
     BinaryOpTacky.BOR: BinaryOpASM.BOR,
     BinaryOpTacky.BXOR: BinaryOpASM.BXOR,
-    }
+}
+
+REL_TO_FLAGS = {
+    BinaryOpTacky.GE: CondFlags.G,
+    BinaryOpTacky.GEQ: CondFlags.GE,
+    BinaryOpTacky.LE: CondFlags.L,
+    BinaryOpTacky.LEQ: CondFlags.LE,
+    BinaryOpTacky.EQ: CondFlags.E,
+    BinaryOpTacky.NEQ: CondFlags.NE,
+}
 
 
 def asmFromTacky(node: TackyNode):
@@ -52,27 +72,59 @@ def asmFromTacky(node: TackyNode):
         case ReturnTacky(val=val):
             asm_val = asmFromTacky(val)
             return [MoveASM(asm_val, RegisterASM(RegisterEnum.EAX)), ReturnASM()]
-        case UnaryTacky(op=op, src=src, dst=dst_reg):
+        case CopyTacky(src=src, dst=dst):
+            return [MoveASM(src, dst)]
+        case UnaryTacky(op=op, src=src, dst=dst) if op == UnaryOpTacky.NOT:
             return [
-                MoveASM(asmFromTacky(src), asmFromTacky(dst_reg)),
-                UnaryASM(OP_TABLE[op], asmFromTacky(dst_reg)),
+                CmpASM(IntASM(0), asmFromTacky(src)),
+                MoveASM(IntASM(0), asmFromTacky(dst)),
+                SetCCASM(CondFlags.E, asmFromTacky(dst))
+            ]
+        case UnaryTacky(op=op, src=src, dst=dst):
+            return [
+                MoveASM(asmFromTacky(src), asmFromTacky(dst)),
+                UnaryASM(OP_TABLE[op], asmFromTacky(dst)),
+            ]
+        case BinaryTacky(
+            op=op, left_val=left_val, right_val=right_val, dst=dst
+        ) if op in REL_TO_FLAGS:
+            return [
+                CmpASM(asmFromTacky(left_val), asmFromTacky(right_val)),
+                MoveASM(IntASM(0), asmFromTacky(dst)),
+                SetCCASM(REL_TO_FLAGS[op], asmFromTacky(dst)),
             ]
         case BinaryTacky(op=op, left_val=left_val, right_val=right_val, dst=dst):
             if op == BinaryOpTacky.DIV or op == BinaryOpTacky.MOD:
-                dst_reg = RegisterEnum.EAX
+                dst = RegisterEnum.EAX
                 if op == BinaryOpTacky.MOD:
-                    dst_reg = RegisterEnum.EDX
+                    dst = RegisterEnum.EDX
 
                 return [
                     MoveASM(asmFromTacky(left_val), RegisterASM(RegisterEnum.EAX)),
                     CdqASM(),
                     IDivASM(asmFromTacky(right_val)),
-                    MoveASM(RegisterASM(dst_reg), asmFromTacky(dst))
+                    MoveASM(RegisterASM(dst), asmFromTacky(dst)),
                 ]
             return [
                 MoveASM(asmFromTacky(left_val), asmFromTacky(dst)),
-                BinaryASM(OP_TABLE[op], asmFromTacky(right_val), asmFromTacky(dst))
+                BinaryASM(OP_TABLE[op], asmFromTacky(right_val), asmFromTacky(dst)),
             ]
+        case JumpTacky(target=target):
+            return [
+                JumpASM(target)
+            ]
+        case JumpIfZero(condition=condition, target=target):
+            return [
+                CmpASM(IntASM(0), asmFromTacky(condition)),
+                JumpCCASM(CondFlags.E, target),
+            ]
+        case JumpIfNotZero(condition=condition, target=target):
+            return [
+                CmpASM(IntASM(0), asmFromTacky(condition)),
+                JumpCCASM(CondFlags.NE, target),
+            ]
+        case LabelTacky(name=name):
+            return [LabelASM(name)]
         case FuncTacky(identifier=identifier, instructions=instructions):
             res = [AllocateStack(0)]
             # Number of bytes/int in our version of C
@@ -112,6 +164,39 @@ def asmFromTacky(node: TackyNode):
                                 found[dst_id] = num_vars
                             new_dst = StackASM(-1 * sizeof_int * found[dst_id])
                             res.append(MoveASM(cur_source, new_dst))
+
+                        case CmpASM(left_operand=left_operand, right_operand=IntASM(val=x)):
+                            res.append(MoveASM(IntASM(x), RegisterASM(RegisterEnum.R11D)))
+                            res.append(CmpASM(left_operand, RegisterASM(RegisterEnum.R11D)))
+
+                        case CmpASM(left_operand=PsuedoRegASM(identifier=l_name), right_operand=PsuedoRegASM(identifier=r_name)):
+                            if l_name not in found:
+                                num_vars += 1
+                                found[l_name] = num_vars
+                            if r_name not in found:
+                                num_vars += 1
+                                found[r_name] = num_vars
+
+                            new_left = StackASM(-1 * sizeof_int * found[l_name])
+                            new_right = StackASM(-1 * sizeof_int * found[r_name])
+                            res.append(MoveASM(new_left, RegisterASM(RegisterEnum.R10D)))
+                            res.append(CmpASM(RegisterASM(RegisterEnum.R10D), new_right))
+
+                        case CmpASM(left_operand=PsuedoRegASM(identifier=l_name), right_operand=right_operand):
+                            if l_name not in found:
+                                num_vars += 1
+                                found[l_name] = num_vars
+                            new_left = StackASM(-1 * sizeof_int * found[l_name])
+                            res.append(CmpASM(new_left, right_operand))
+
+                        case CmpASM(left_operand=left_operand, right_operand=PsuedoRegASM(identifier=r_name)):
+                            if r_name not in found:
+                                num_vars += 1
+                                found[r_name] = num_vars
+
+                            new_right = StackASM(-1 * sizeof_int * found[r_name])
+                            res.append(CmpASM(left_operand, new_right))
+
                         case UnaryASM(op=cur_op, dst=PsuedoRegASM(identifier=dst_id)):
                             if dst_id not in found:
                                 num_vars += 1
@@ -119,49 +204,95 @@ def asmFromTacky(node: TackyNode):
                             new_dst = StackASM(-1 * sizeof_int * found[dst_id])
                             res.append(UnaryASM(cur_op, new_dst))
 
-                        case BinaryASM(op=cur_op, r_src=PsuedoRegASM(identifier=r_src_id),dst=PsuedoRegASM(identifier=dst_id)):
+                        case BinaryASM(
+                            op=cur_op,
+                            r_src=PsuedoRegASM(identifier=r_src_id),
+                            dst=PsuedoRegASM(identifier=dst_id),
+                        ):
                             if r_src_id not in found:
                                 num_vars += 1
                                 found[r_src_id] = num_vars
                             if dst_id not in found:
                                 num_vars += 1
-                                found[dst_reg] = num_vars
+                                found[dst] = num_vars
                             new_r_src = StackASM(-1 * sizeof_int * found[r_src_id])
                             new_dst = StackASM(-1 * sizeof_int * found[dst_id])
 
-                            res.append(MoveASM(new_r_src, RegisterASM(RegisterEnum.R10D)))
+                            res.append(
+                                MoveASM(new_r_src, RegisterASM(RegisterEnum.R10D))
+                            )
                             if cur_op == BinaryOpASM.MUL:
                                 ## TODO: rename the src/dst parameters
-                                res.append(MoveASM(new_dst, RegisterASM(RegisterEnum.R11D)))
-                                res.append(BinaryASM(cur_op, RegisterASM(RegisterEnum.R10D), RegisterASM(RegisterEnum.R11D)))
-                                res.append(MoveASM(RegisterASM(RegisterEnum.R11D), new_dst))
+                                res.append(
+                                    MoveASM(new_dst, RegisterASM(RegisterEnum.R11D))
+                                )
+                                res.append(
+                                    BinaryASM(
+                                        cur_op,
+                                        RegisterASM(RegisterEnum.R10D),
+                                        RegisterASM(RegisterEnum.R11D),
+                                    )
+                                )
+                                res.append(
+                                    MoveASM(RegisterASM(RegisterEnum.R11D), new_dst)
+                                )
                             elif cur_op in {BinaryOpASM.LSHIFT, BinaryOpASM.RSHIFT}:
-                                res.append(MoveASM(new_r_src, RegisterASM(RegisterEnum.ECX)))
-                                res.append(BinaryASM(cur_op, RegisterASM(RegisterEnum.CL), new_dst))
+                                res.append(
+                                    MoveASM(new_r_src, RegisterASM(RegisterEnum.ECX))
+                                )
+                                res.append(
+                                    BinaryASM(
+                                        cur_op, RegisterASM(RegisterEnum.CL), new_dst
+                                    )
+                                )
                             else:
-                                res.append(BinaryASM(cur_op, RegisterASM(RegisterEnum.R10D), new_dst))
-                        case BinaryASM(op=cur_op, r_src=r_src, dst=PsuedoRegASM(identifier=dst_id)):
+                                res.append(
+                                    BinaryASM(
+                                        cur_op, RegisterASM(RegisterEnum.R10D), new_dst
+                                    )
+                                )
+                        case BinaryASM(
+                            op=cur_op, r_src=r_src, dst=PsuedoRegASM(identifier=dst_id)
+                        ):
                             if dst_id not in found:
                                 num_vars += 1
-                                found[dst_reg] = num_vars
+                                found[dst] = num_vars
                             new_dst = StackASM(-1 * sizeof_int * found[dst_id])
                             if cur_op == BinaryOpASM.MUL:
-                                res.append(MoveASM(new_dst, RegisterASM(RegisterEnum.R11D)))
-                                res.append(BinaryASM(cur_op, r_src, RegisterASM(RegisterEnum.R11D)))
-                                res.append(MoveASM(RegisterASM(RegisterEnum.R11D), new_dst))
+                                res.append(
+                                    MoveASM(new_dst, RegisterASM(RegisterEnum.R11D))
+                                )
+                                res.append(
+                                    BinaryASM(
+                                        cur_op, r_src, RegisterASM(RegisterEnum.R11D)
+                                    )
+                                )
+                                res.append(
+                                    MoveASM(RegisterASM(RegisterEnum.R11D), new_dst)
+                                )
                             elif cur_op in {BinaryOpASM.LSHIFT, BinaryOpASM.RSHIFT}:
-                                res.append(MoveASM(r_src, RegisterASM(RegisterEnum.ECX)))
-                                res.append(BinaryASM(cur_op, RegisterASM(RegisterEnum.CL), new_dst))
+                                res.append(
+                                    MoveASM(r_src, RegisterASM(RegisterEnum.ECX))
+                                )
+                                res.append(
+                                    BinaryASM(
+                                        cur_op, RegisterASM(RegisterEnum.CL), new_dst
+                                    )
+                                )
                             else:
                                 res.append(BinaryASM(cur_op, r_src, new_dst))
 
-                        case BinaryASM(op=cur_op, r_src=PsuedoRegASM(identifier=r_src_id),dst=dst_reg):
+                        case BinaryASM(
+                            op=cur_op,
+                            r_src=PsuedoRegASM(identifier=r_src_id),
+                            dst=dst,
+                        ):
                             if r_src_id not in found:
                                 num_vars += 1
                                 found[r_src_id] = num_vars
                             new_r_src = StackASM(-1 * sizeof_int * found[r_src_id])
 
-                            res.append(BinaryASM(cur_op, new_r_src, dst_reg))
+                            res.append(BinaryASM(cur_op, new_r_src, dst))
 
                         case IDivASM(src=PsuedoRegASM(identifier=id)):
                             if id not in found:
@@ -170,10 +301,10 @@ def asmFromTacky(node: TackyNode):
                             res.append(IDivASM(StackASM(-1 * sizeof_int * found[id])))
 
                         case IDivASM(src=IntASM(val=val)):
-                            res.append(MoveASM(IntASM(val), RegisterASM(RegisterEnum.R10D)))
+                            res.append(
+                                MoveASM(IntASM(val), RegisterASM(RegisterEnum.R10D))
+                            )
                             res.append(IDivASM(RegisterASM(RegisterEnum.R10D)))
-
-
 
                         case _:
                             res.append(ins)

@@ -110,6 +110,14 @@ class BinaryOpASM(Enum):
     BAND = auto()
     BOR = auto()
     BXOR = auto()
+    GE = auto()
+    GEQ = auto()
+    LE = auto()
+    LEQ = auto()
+    EQ = auto()
+    NEQ = auto()
+    LAND = auto()
+    LOR = auto()
 
     def codegen(self):
         if self == BinaryOpASM.ADD:
@@ -129,21 +137,20 @@ class BinaryOpASM(Enum):
         if self == BinaryOpASM.BXOR:
             return "xor"
         raise NotImplementedError("Did not implement ", self.value)
-        
+
 
 class BinaryASM(InstructionASM):
 
-    def __init__(self, op:BinaryOpASM, r_src: OperandASM, dst: OperandASM):
+    def __init__(self, op: BinaryOpASM, r_src: OperandASM, dst: OperandASM):
         self.op = op
         self.r_src = r_src
         self.dst = dst
 
     def __repr__(self):
         return f"Binary({self.op}, {repr(self.r_src)}, {repr(self.dst)})"
-    
+
     def codegen(self):
         return f"{self.op.codegen()} {self.r_src.codegen()}, {self.dst.codegen()}"
-
 
 
 class UnaryOpASM(Enum):
@@ -153,7 +160,10 @@ class UnaryOpASM(Enum):
     def codegen(self):
         if self == UnaryOpASM.NEG:
             return "negl"
-        return "notl"
+        elif self == UnaryOpASM.BITFLIP:
+            return "notl"
+        raise NotImplementedError("Attempting to generate ", self)
+
 
 class UnaryASM(InstructionASM):
 
@@ -163,25 +173,26 @@ class UnaryASM(InstructionASM):
 
     def __repr__(self):
         return f"Unary({self.op}, {repr(self.dst)})"
-    
+
     def codegen(self):
         return f"{self.op.codegen()} {self.dst.codegen()}"
-    
+
+
 class IDivASM(InstructionASM):
     def __init__(self, src: OperandASM):
         self.src = src
-    
+
     def __repr__(self):
         return f"IDiv({repr(self.src)})"
-    
+
     def codegen(self):
         return f"idivl {self.src.codegen()}"
-    
+
 
 class CdqASM(InstructionASM):
     def __repr__(self):
         return "CDQ"
-    
+
     def codegen(self):
         return "cdq"
 
@@ -193,7 +204,7 @@ class AllocateStack(InstructionASM):
 
     def __repr__(self):
         return f"AllocateStack({self.num_vals})"
-    
+
     def codegen(self):
         return f"subq ${self.num_vals}, %rsp"
 
@@ -207,6 +218,58 @@ class ReturnASM(InstructionASM):
         res += "popq %rbp\n"
         res += "ret"
         return res
+
+
+class CmpASM(InstructionASM):
+    def __init__(self, left_operand: OperandASM, right_operand: OperandASM):
+        self.src = left_operand
+        self.dst = right_operand
+
+    def __repr__(self):
+        return f"CMP({repr(self.src)}, {repr(self.dst)})"
+
+
+class LabelASM(InstructionASM):
+    def __init__(self, name: str):
+        self.name = name
+
+    def __repr__(self):
+        return f"Label({self.name})"
+
+
+class JumpASM(InstructionASM):
+    def __init__(self, name: str):
+        self.name = name
+
+    def __repr__(self):
+        return f"JMP({self.name})"
+
+
+class CondFlags(Enum):
+    E = auto()
+    NE = auto()
+    G = auto()
+    GE = auto()
+    L = auto()
+    LE = auto()
+
+
+class JumpCCASM(InstructionASM):
+    def __init__(self, cond_code: CondFlags, name: str):
+        self.cond_code = cond_code
+        self.name = name
+
+    def __repr__(self):
+        return f"JMPCC({self.cond_code}, {self.name})"
+
+
+class SetCCASM(InstructionASM):
+    def __init__(self, cond_code: CondFlags, src: OperandASM):
+        self.cond_code = cond_code
+        self.src = src
+
+    def __repr__(self):
+        return f"SetCC({self.cond_code}, {repr(self.src)})"
 
 
 class FunctionASM(ASM):

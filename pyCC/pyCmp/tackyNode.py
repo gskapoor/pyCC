@@ -125,7 +125,7 @@ class JumpIfNotZero(InstructionTacky):
         return f"JumpIfNotZero({repr(self.condition)}, {self.target})"
 
 
-class Label(InstructionTacky):
+class LabelTacky(InstructionTacky):
     def __init__(self, name: str):
         self.name = name
 

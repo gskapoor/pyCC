@@ -197,6 +197,14 @@ def asmFromTacky(node: TackyNode):
                             new_right = StackASM(-1 * sizeof_int * found[r_name])
                             res.append(CmpASM(left_operand, new_right))
 
+                        case SetCCASM(cond_code=cond_code, src=PsuedoRegASM(identifier=name)):
+                            if name not in found:
+                                num_vars += 1
+                                found[name] = num_vars
+                            new_src = StackASM(-1 * sizeof_int * found[name])
+                            res.append(SetCCASM(cond_code, new_src))
+
+
                         case UnaryASM(op=cur_op, dst=PsuedoRegASM(identifier=dst_id)):
                             if dst_id not in found:
                                 num_vars += 1

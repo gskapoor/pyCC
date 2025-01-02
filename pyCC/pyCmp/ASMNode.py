@@ -6,13 +6,15 @@ class ASM:
     pass
 
 
+## TODO: make this register allocation stuff better
+## Working idea: only have the 4-bit names out
+## (only EAX, R10D, etc.)
+## Just rename the rest
+## also, have a special codegen flag
 class RegisterEnum(Enum):
-    RAX = auto()
     EAX = auto()
-    RCX = auto()
     ECX = auto()
     CL = auto()
-    RDX = auto()
     EDX = auto()
     R10D = auto()
     R11D = auto()
@@ -29,25 +31,27 @@ class RegisterASM(OperandASM):
     def __repr__(self):
         return repr(self.val)
 
-    def codegen(self):
+    def codegen(self, wordlen=4):
         match self.val:
-            case RegisterEnum.RAX:
-                return "%rax"
             case RegisterEnum.EAX:
+                if wordlen == 1:
+                    return "%ax"
                 return "%eax"
-            case RegisterEnum.RCX:
-                return "%rcx"
             case RegisterEnum.ECX:
+                if wordlen == 1:
+                    return "%cx"
                 return "%ecx"
             case RegisterEnum.CL:
                 return "%cl"
-            case RegisterEnum.RDX:
-                return "%rdx"
             case RegisterEnum.EDX:
                 return "%edx"
             case RegisterEnum.R10D:
+                if wordlen == 1:
+                    return "%r10b"
                 return "%r10d"
             case RegisterEnum.R11D:
+                if wordlen == 1:
+                    return "%r10d"
                 return "%r11d"
             case _:
                 raise TypeError("Invalid Register: ", self.val)
@@ -299,6 +303,11 @@ class SetCCASM(InstructionASM):
 
     def __repr__(self):
         return f"SetCC({self.cond_code}, {repr(self.src)})"
+    
+    def codegen(self):
+        if type(self.src) == RegisterASM:
+            return f"j{self.cond_code.codegen()} {self.src.codegen(wordlen=1)}"
+        return f"set{self.cond_code.codegen()} {self.src.codegen()}"
 
 
 class FunctionASM(ASM):

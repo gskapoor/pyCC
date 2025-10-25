@@ -115,12 +115,15 @@ def asmFromTacky(node: TackyNode):
             ]
         case JumpIfZero(condition=condition, target=LabelTacky(name=name)):
             return [
-                CmpASM(IntASM(0), asmFromTacky(condition)),
+                # It's easier to keep the known constant on the RHS
+                # That way we don't need to waste stack space on IntAsm(0)
+                # Which will ALWAYS be zero
+                CmpASM(asmFromTacky(condition), IntASM(0)),
                 JumpCCASM(CondFlags.E, f".L{name}"),
             ]
         case JumpIfNotZero(condition=condition, target=LabelTacky(name=name)):
             return [
-                CmpASM(IntASM(0), asmFromTacky(condition)),
+                CmpASM(asmFromTacky(condition), IntASM(0)),
                 JumpCCASM(CondFlags.NE, f".L{name}"),
             ]
         case LabelTacky(name=name):

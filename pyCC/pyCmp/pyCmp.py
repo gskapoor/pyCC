@@ -22,14 +22,17 @@ def py_compile(file_in_name: str, file_out_name: str, mode: int):
     with open(file_in_name, "r", encoding="utf-8") as file_in:
         lex_put = lexer.lex(file_in.read())
         if mode < 1:
+            print(lex_put)
             return True
 
         parse_put = parser.parse(lex_put)
         if mode < 2:
+            print(parse_put)
             return True
 
         tacky = tackygen.tackify(parse_put)
         if mode < 3:
+            print(tacky)
             return True
 
         asm = asmgen.asmgenerate(tacky)

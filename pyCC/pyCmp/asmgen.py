@@ -95,15 +95,15 @@ def asmFromTacky(node: TackyNode):
             ]
         case BinaryTacky(op=op, left_val=left_val, right_val=right_val, dst=dst):
             if op == BinaryOpTacky.DIV or op == BinaryOpTacky.MOD:
-                dst = RegisterEnum.EAX
+                dst_reg = RegisterEnum.EAX
                 if op == BinaryOpTacky.MOD:
-                    dst = RegisterEnum.EDX
+                    dst_reg = RegisterEnum.EDX
 
                 return [
                     MoveASM(asmFromTacky(left_val), RegisterASM(RegisterEnum.EAX)),
                     CdqASM(),
                     IDivASM(asmFromTacky(right_val)),
-                    MoveASM(RegisterASM(dst), asmFromTacky(dst)),
+                    MoveASM(RegisterASM(dst_reg), asmFromTacky(dst)),
                 ]
             return [
                 MoveASM(asmFromTacky(left_val), asmFromTacky(dst)),

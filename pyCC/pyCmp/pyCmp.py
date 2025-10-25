@@ -33,8 +33,6 @@ def py_compile(file_in_name: str, file_out_name: str, mode: int):
             return True
 
         asm = asmgen.asmgenerate(tacky)
-        if mode < 4:
-            return True
 
         with open(file_out_name, "w", encoding="utf-8") as file_out:
             file_out.write(asm)

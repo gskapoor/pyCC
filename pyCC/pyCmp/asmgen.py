@@ -168,6 +168,16 @@ def asmFromTacky(node: TackyNode):
                             new_dst = StackASM(-1 * sizeof_int * found[dst_id])
                             res.append(MoveASM(cur_source, new_dst))
 
+                        case CmpASM(left_operand=IntASM(val=x), right_operand=PsuedoRegASM(identifier=r_name)):
+                            
+                            # Constant to R11 (second operand)
+                            res.append(MoveASM(IntASM(x), RegisterASM(RegisterEnum.R11D)))
+                            if r_name not in found:
+                                num_vars += 1
+                                found[r_name] = num_vars
+
+                            new_right = StackASM(-1 * sizeof_int * found[r_name])
+                            res.append(CmpASM(new_right, RegisterASM(RegisterEnum.R11D)))
                         case CmpASM(left_operand=IntASM(val=x), right_operand=right_operand):
                             res.append(MoveASM(IntASM(x), RegisterASM(RegisterEnum.R11D)))
                             res.append(CmpASM(right_operand, RegisterASM(RegisterEnum.R11D)))

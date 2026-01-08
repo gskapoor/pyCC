@@ -6,10 +6,15 @@ class ASM:
     pass
 
 
+## TODO: make this register allocation stuff better
+## Working idea: only have the 4-bit names out
+## (only EAX, R10D, etc.)
+## Just rename the rest
+## also, have a special codegen flag
 class RegisterEnum(Enum):
-    RAX = auto()
     EAX = auto()
-    RDX = auto()
+    ECX = auto()
+    CL = auto()
     EDX = auto()
     R10D = auto()
     R11D = auto()
@@ -26,19 +31,27 @@ class RegisterASM(OperandASM):
     def __repr__(self):
         return repr(self.val)
 
-    def codegen(self):
+    def codegen(self, wordlen=4):
         match self.val:
-            case RegisterEnum.RAX:
-                return "%rax"
             case RegisterEnum.EAX:
+                if wordlen == 1:
+                    return "%ax"
                 return "%eax"
-            case RegisterEnum.RDX:
-                return "%rdx"
+            case RegisterEnum.ECX:
+                if wordlen == 1:
+                    return "%cx"
+                return "%ecx"
+            case RegisterEnum.CL:
+                return "%cl"
             case RegisterEnum.EDX:
                 return "%edx"
             case RegisterEnum.R10D:
+                if wordlen == 1:
+                    return "%r10b"
                 return "%r10d"
             case RegisterEnum.R11D:
+                if wordlen == 1:
+                    return "%r10d"
                 return "%r11d"
             case _:
                 raise TypeError("Invalid Register: ", self.val)
@@ -62,6 +75,9 @@ class PsuedoRegASM(OperandASM):
 
     def __repr__(self):
         return f"PsuedoReg({self.identifier})"
+    
+    def codegen(self):
+        raise Exception("You should not be generating assembly from a PsuedoRegister")
 
 
 class StackASM(OperandASM):
@@ -96,6 +112,19 @@ class BinaryOpASM(Enum):
     ADD = auto()
     SUB = auto()
     MUL = auto()
+    LSHIFT = auto()
+    RSHIFT = auto()
+    BAND = auto()
+    BOR = auto()
+    BXOR = auto()
+    GE = auto()
+    GEQ = auto()
+    LE = auto()
+    LEQ = auto()
+    EQ = auto()
+    NEQ = auto()
+    LAND = auto()
+    LOR = auto()
 
     def codegen(self):
         if self == BinaryOpASM.ADD:
@@ -104,21 +133,31 @@ class BinaryOpASM(Enum):
             return "subl"
         if self == BinaryOpASM.MUL:
             return "imull"
-        
+        if self == BinaryOpASM.LSHIFT:
+            return "sal"
+        if self == BinaryOpASM.RSHIFT:
+            return "sar"
+        if self == BinaryOpASM.BAND:
+            return "and"
+        if self == BinaryOpASM.BOR:
+            return "or"
+        if self == BinaryOpASM.BXOR:
+            return "xor"
+        raise NotImplementedError("Did not implement ", self.value)
+
 
 class BinaryASM(InstructionASM):
 
-    def __init__(self, op:BinaryOpASM, r_src: OperandASM, dst: OperandASM):
+    def __init__(self, op: BinaryOpASM, r_src: OperandASM, dst: OperandASM):
         self.op = op
         self.r_src = r_src
         self.dst = dst
 
     def __repr__(self):
         return f"Binary({self.op}, {repr(self.r_src)}, {repr(self.dst)})"
-    
+
     def codegen(self):
         return f"{self.op.codegen()} {self.r_src.codegen()}, {self.dst.codegen()}"
-
 
 
 class UnaryOpASM(Enum):
@@ -128,7 +167,10 @@ class UnaryOpASM(Enum):
     def codegen(self):
         if self == UnaryOpASM.NEG:
             return "negl"
-        return "notl"
+        elif self == UnaryOpASM.BITFLIP:
+            return "notl"
+        raise NotImplementedError("Attempting to generate ", self)
+
 
 class UnaryASM(InstructionASM):
 
@@ -138,25 +180,26 @@ class UnaryASM(InstructionASM):
 
     def __repr__(self):
         return f"Unary({self.op}, {repr(self.dst)})"
-    
+
     def codegen(self):
         return f"{self.op.codegen()} {self.dst.codegen()}"
-    
+
+
 class IDivASM(InstructionASM):
     def __init__(self, src: OperandASM):
         self.src = src
-    
+
     def __repr__(self):
         return f"IDiv({repr(self.src)})"
-    
+
     def codegen(self):
         return f"idivl {self.src.codegen()}"
-    
+
 
 class CdqASM(InstructionASM):
     def __repr__(self):
         return "CDQ"
-    
+
     def codegen(self):
         return "cdq"
 
@@ -168,7 +211,7 @@ class AllocateStack(InstructionASM):
 
     def __repr__(self):
         return f"AllocateStack({self.num_vals})"
-    
+
     def codegen(self):
         return f"subq ${self.num_vals}, %rsp"
 
@@ -182,6 +225,89 @@ class ReturnASM(InstructionASM):
         res += "popq %rbp\n"
         res += "ret"
         return res
+
+
+class CmpASM(InstructionASM):
+    def __init__(self, left_operand: OperandASM, right_operand: OperandASM):
+        self.left_operand = left_operand
+        self.right_operand = right_operand
+
+    def __repr__(self):
+        return f"CMP({repr(self.left_operand)}, {repr(self.right_operand)})"
+    
+    def codegen(self):
+        return f"cmpl {self.left_operand.codegen()}, {self.right_operand.codegen()}"
+
+
+class LabelASM(InstructionASM):
+    def __init__(self, name: str):
+        self.name = name
+
+    def __repr__(self):
+        return f"Label({self.name})"
+    
+    def codegen(self):
+        return f".L{self.name}:"
+
+
+class JumpASM(InstructionASM):
+    def __init__(self, dest: str):
+        self.dest = dest
+
+    def __repr__(self):
+        return f"JMP({self.dest})"
+
+    def codegen(self):
+        return f"jmp {self.dest}"
+
+class CondFlags(Enum):
+    E = auto()
+    NE = auto()
+    G = auto()
+    GE = auto()
+    L = auto()
+    LE = auto()
+
+    def codegen(self):
+        if self == CondFlags.E:
+            return "e"
+        if self == CondFlags.NE:
+            return "ne"
+        if self == CondFlags.G:
+            return "g"
+        if self == CondFlags.GE:
+            return "ge"
+        if self == CondFlags.L:
+            return "l"
+        if self == CondFlags.LE:
+            return "le"
+        
+        raise Exception("Invalid Condition Flag")
+
+
+class JumpCCASM(InstructionASM):
+    def __init__(self, cond_code: CondFlags, name: str):
+        self.cond_code = cond_code
+        self.name = name
+
+    def __repr__(self):
+        return f"JMPCC({self.cond_code}, {self.name})"
+
+    def codegen(self):
+        return f"j{self.cond_code.codegen()} {self.name}"
+
+class SetCCASM(InstructionASM):
+    def __init__(self, cond_code: CondFlags, src: OperandASM):
+        self.cond_code = cond_code
+        self.src = src
+
+    def __repr__(self):
+        return f"SetCC({self.cond_code}, {repr(self.src)})"
+    
+    def codegen(self):
+        if type(self.src) == RegisterASM:
+            return f"j{self.cond_code.codegen()} {self.src.codegen(wordlen=1)}"
+        return f"set{self.cond_code.codegen()} {self.src.codegen()}"
 
 
 class FunctionASM(ASM):

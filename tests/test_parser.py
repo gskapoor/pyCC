@@ -198,5 +198,98 @@ class TestParser(unittest.TestCase):
         )
         self.assertEqual(str(output), str(expected))
 
+    def test_mixed_binary_1(self):
+        test_prog = """
+                    int main(void) {
+                        return 
+                            1 + 2 ^ 3;
+                    }
+                    """
+        output = parser.parse(lexer.lex(test_prog))
+        expected = ProgramNode(
+            FunctionNode(
+                IdentifierNode("main"),
+                ReturnNode(
+                    BinaryExpressionNode(
+                        BinaryOperatorNode.BITXOR,
+                        BinaryExpressionNode(
+                            BinaryOperatorNode.ADD,
+                            ConstIntNode(1),
+                            ConstIntNode(2)
+                        ),
+                        ConstIntNode(3)
+                    )
+                )
+            ),
+        )
+        self.assertEqual(str(output), str(expected))
+
+    def test_leq(self):
+        test_prog = """
+                    int main(void){
+                        return 1 <= 2;
+                    }
+                    """
+        output = parser.parse(lexer.lex(test_prog))
+        expected = ProgramNode(
+            FunctionNode(
+                IdentifierNode("main"),
+                ReturnNode(
+                    BinaryExpressionNode(
+                        BinaryOperatorNode.LEQ, ConstIntNode(1), ConstIntNode(2)
+                    )
+                ),
+            )
+        )
+
+        self.assertEqual(str(output), str(expected))
+
+    def test_log_prec(self):
+        test_prog = """
+                    int main(void){
+                        return 1 <= 2 == 3;
+                    }
+                    """
+        output = parser.parse(lexer.lex(test_prog))
+        expected = ProgramNode(
+            FunctionNode(
+                IdentifierNode("main"),
+                ReturnNode(
+                    BinaryExpressionNode(
+                        BinaryOperatorNode.EQ,
+                        BinaryExpressionNode(
+                            BinaryOperatorNode.LEQ, ConstIntNode(1), ConstIntNode(2)
+                        ), 
+                        ConstIntNode(3)
+                    )
+                ),
+            )
+        )
+
+        self.assertEqual(str(output), str(expected))
+
+    def test_log_not(self):
+        test_prog = """
+                    int main(void){
+                        return !1;
+                    }
+                    """
+        output = parser.parse(lexer.lex(test_prog))
+        expected = ProgramNode(
+            FunctionNode(
+                IdentifierNode("main"),
+                ReturnNode(
+                    UnaryExpressionNode(
+                        UnaryOperatorNode.NOT, ConstIntNode(1)
+                    )
+                ),
+            )
+        )
+
+        self.assertEqual(str(output), str(expected))
+
+
+
+
 
 

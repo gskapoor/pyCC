@@ -11,6 +11,7 @@ class TackyNode:
 class UnaryOpTacky(Enum):
     NEG = auto()
     BITFLIP = auto()
+    NOT = auto()
 
 
 class BinaryOpTacky(Enum):
@@ -19,6 +20,19 @@ class BinaryOpTacky(Enum):
     MUL = auto()
     DIV = auto()
     MOD = auto()
+    LSHIFT = auto()
+    RSHIFT = auto()
+    BAND = auto()
+    BOR = auto()
+    BXOR = auto()
+    GE = auto()
+    GEQ = auto()
+    LE = auto()
+    LEQ = auto()
+    EQ = auto()
+    NEQ = auto()
+    LAND = auto()
+    LOR = auto()
 
 
 class ValTacky(TackyNode):
@@ -74,6 +88,49 @@ class BinaryTacky(InstructionTacky):
 
     def __repr__(self):
         return f"Binary({self.op}, {repr(self.left_val)}, {repr(self.right_val)}, {repr(self.dst)})"
+
+
+class CopyTacky(InstructionTacky):
+    def __init__(self, src: ValTacky, dst: ValTacky):
+        self.src = src
+        self.dst = dst
+
+    def __repr__(self):
+        return f"Copy({self.src}, {self.dst})"
+
+
+class LabelTacky(InstructionTacky):
+    def __init__(self, name: str):
+        self.name = name
+
+    def __repr__(self):
+        return f"Label({self.name})"
+
+
+class JumpTacky(InstructionTacky):
+    def __init__(self, target: LabelTacky):
+        self.target = target
+
+    def __repr__(self):
+        return f"Jump({self.target})"
+
+
+class JumpIfZero(InstructionTacky):
+    def __init__(self, condition: ValTacky, target: LabelTacky):
+        self.condition = condition
+        self.target = target
+
+    def __repr__(self):
+        return f"JumpIfZero({repr(self.condition)}, {self.target})"
+
+
+class JumpIfNotZero(InstructionTacky):
+    def __init__(self, condition: ValTacky, target: LabelTacky):
+        self.condition = condition
+        self.target = target
+
+    def __repr__(self):
+        return f"JumpIfNotZero({repr(self.condition)}, {self.target})"
 
 
 class FuncTacky(TackyNode):

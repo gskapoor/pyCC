@@ -30,15 +30,41 @@ BINOP_TOKENS = {
     TokenType.FSLASH: 50,
     TokenType.MODULUS: 50,
     TokenType.PLUS: 45,
-    TokenType.NEGATE: 45
+    TokenType.NEGATE: 45,
+    TokenType.LSHIFT: 40,
+    TokenType.RSHIFT: 40,
+    TokenType.BITAND: 25,
+    TokenType.BITOR: 15,
+    TokenType.BITXOR: 20,
+    TokenType.GE: 35,
+    TokenType.GEQ: 35,
+    TokenType.LE: 35,
+    TokenType.LEQ: 35,
+    TokenType.EQ: 30,
+    TokenType.NEQ: 30,
+    TokenType.LAND: 10,
+    TokenType.LOR: 5,
 }
 
 BINOP_TOK_TO_AST = {
     TokenType.ASTERISK: BinaryOperatorNode.MUL,
-    TokenType.FSLASH: BinaryOperatorNode.DIV, 
+    TokenType.FSLASH: BinaryOperatorNode.DIV,
     TokenType.MODULUS: BinaryOperatorNode.MOD,
     TokenType.PLUS: BinaryOperatorNode.ADD,
-    TokenType.NEGATE: BinaryOperatorNode.SUB
+    TokenType.NEGATE: BinaryOperatorNode.SUB,
+    TokenType.LSHIFT: BinaryOperatorNode.LSHIFT,
+    TokenType.RSHIFT: BinaryOperatorNode.RSHIFT,
+    TokenType.BITAND: BinaryOperatorNode.BITAND,
+    TokenType.BITOR: BinaryOperatorNode.BITOR,
+    TokenType.BITXOR: BinaryOperatorNode.BITXOR,
+    TokenType.GE: BinaryOperatorNode.GE,
+    TokenType.GEQ: BinaryOperatorNode.GEQ,
+    TokenType.LE: BinaryOperatorNode.LE,
+    TokenType.LEQ: BinaryOperatorNode.LEQ,
+    TokenType.EQ: BinaryOperatorNode.EQ,
+    TokenType.NEQ: BinaryOperatorNode.NEQ,
+    TokenType.LAND: BinaryOperatorNode.LAND,
+    TokenType.LOR: BinaryOperatorNode.LOR,
 }
 
 class Parser:
@@ -156,6 +182,10 @@ class Parser:
             ## Unary time
             expr = self.parseFactor()
             return UnaryExpressionNode(UnaryOperatorNode.BITFLIP, expr)
+        elif self.consumeTokens(TokenType.NOT):
+            ## Unary time
+            expr = self.parseFactor()
+            return UnaryExpressionNode(UnaryOperatorNode.NOT, expr)
         elif self.consumeTokens(TokenType.POPEN):
             expr = self.parseExpression()
             if not self.consumeTokens(TokenType.PCLOSE):

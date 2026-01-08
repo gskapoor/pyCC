@@ -9,24 +9,55 @@ from .ASTNode import (
     UnaryExpressionNode,
     ReturnNode,
     ProgramNode,
-    UnaryOperatorNode
+    UnaryOperatorNode,
 )
-from .tackyNode import BinaryOpTacky, BinaryTacky, ConstIntTacky, FuncTacky, ProgramTacky, ReturnTacky, UnaryOpTacky, UnaryTacky, VarTacky
+from .tackyNode import (
+    BinaryOpTacky,
+    BinaryTacky,
+    ConstIntTacky,
+    CopyTacky,
+    FuncTacky,
+    JumpIfNotZero,
+    JumpIfZero,
+    JumpTacky,
+    LabelTacky,
+    ProgramTacky,
+    ReturnTacky,
+    UnaryOpTacky,
+    UnaryTacky,
+    VarTacky,
+)
 
 
 OP_TABLE = {
     UnaryOperatorNode.NEG: UnaryOpTacky.NEG,
     UnaryOperatorNode.BITFLIP: UnaryOpTacky.BITFLIP,
+    UnaryOperatorNode.NOT: UnaryOpTacky.NOT,
     BinaryOperatorNode.ADD: BinaryOpTacky.ADD,
     BinaryOperatorNode.SUB: BinaryOpTacky.SUB,
     BinaryOperatorNode.MUL: BinaryOpTacky.MUL,
     BinaryOperatorNode.DIV: BinaryOpTacky.DIV,
     BinaryOperatorNode.MOD: BinaryOpTacky.MOD,
+    BinaryOperatorNode.LSHIFT: BinaryOpTacky.LSHIFT,
+    BinaryOperatorNode.RSHIFT: BinaryOpTacky.RSHIFT,
+    BinaryOperatorNode.BITAND: BinaryOpTacky.BAND,
+    BinaryOperatorNode.BITOR: BinaryOpTacky.BOR,
+    BinaryOperatorNode.BITXOR: BinaryOpTacky.BXOR,
+    BinaryOperatorNode.GE: BinaryOpTacky.GE,
+    BinaryOperatorNode.GEQ: BinaryOpTacky.GEQ,
+    BinaryOperatorNode.LE: BinaryOpTacky.LE,
+    BinaryOperatorNode.LEQ: BinaryOpTacky.LEQ,
+    BinaryOperatorNode.EQ: BinaryOpTacky.EQ,
+    BinaryOperatorNode.NEQ: BinaryOpTacky.NEQ,
+    BinaryOperatorNode.LAND: BinaryOpTacky.LAND,
+    BinaryOperatorNode.LOR: BinaryOpTacky.LOR,
 }
+
 
 class TackyGen:
     def __init__(self):
         self.vars_used = 0
+        self.labels_used = 0
 
     def genVariable(self):
         res = VarTacky(f".tmp{self.vars_used}")
@@ -38,11 +69,53 @@ class TackyGen:
             case ConstIntNode(value=val):
                 return ConstIntTacky(val), []
             case UnaryExpressionNode(op=op, expr=expr):
-                src,instructions = self.emit_tacky(expr)
+                src, instructions = self.emit_tacky(expr)
                 new_var = self.genVariable()
                 instructions.append(UnaryTacky(OP_TABLE[op], src, new_var))
                 return new_var, instructions
-            case BinaryExpressionNode(op=op, left_expr=left_expr, right_expr=right_expr):
+            case BinaryExpressionNode(
+                op=BinaryOperatorNode.LOR, left_expr=left_expr, right_expr=right_expr
+            ):
+                new_var = self.genVariable()
+
+                left_src, instructions = self.emit_tacky(left_expr)
+                instructions.append(JumpIfNotZero(left_src, LabelTacky(f"or_true{self.labels_used}")))
+
+                right_src, right_instructions = self.emit_tacky(right_expr)
+                instructions += right_instructions
+                instructions.append(JumpIfNotZero(right_src, LabelTacky(f"or_true{self.labels_used}")))
+                instructions.append(CopyTacky(ConstIntTacky(0), new_var))
+                instructions.append(JumpTacky(LabelTacky(f"or_end{self.labels_used}")))
+
+                instructions.append(LabelTacky(f"or_true{self.labels_used}"))
+                instructions.append(CopyTacky(ConstIntTacky(1), new_var))
+                instructions.append(LabelTacky(f"or_end{self.labels_used}"))
+
+                self.labels_used += 1
+                return new_var, instructions
+            case BinaryExpressionNode(
+                op=BinaryOperatorNode.LAND, left_expr=left_expr, right_expr=right_expr
+            ):
+                new_var = self.genVariable()
+
+                left_src, instructions = self.emit_tacky(left_expr)
+                instructions.append(JumpIfZero(left_src, LabelTacky(f"and_false{self.labels_used}")))
+
+                right_src, right_instructions = self.emit_tacky(right_expr)
+                instructions += right_instructions
+                instructions.append(JumpIfZero(right_src, LabelTacky(f"and_false{self.labels_used}")))
+                instructions.append(CopyTacky(ConstIntTacky(1), new_var))
+                instructions.append(JumpTacky(LabelTacky(f"and_end{self.labels_used}")))
+
+                instructions.append(LabelTacky(f"and_false{self.labels_used}"))
+                instructions.append(CopyTacky(ConstIntTacky(0), new_var))
+                instructions.append(LabelTacky(f"and_end{self.labels_used}"))
+
+                self.labels_used += 1
+                return new_var, instructions
+            case BinaryExpressionNode(
+                op=op, left_expr=left_expr, right_expr=right_expr
+            ):
                 left_src, left_instructions = self.emit_tacky(left_expr)
                 right_src, right_instructions = self.emit_tacky(right_expr)
                 instructions = left_instructions + right_instructions

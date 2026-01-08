@@ -44,6 +44,7 @@ class ConstIntNode(ExpressionNode):
 class UnaryOperatorNode(Enum):
     NEG = auto()
     BITFLIP = auto()
+    NOT = auto()
 
 
 class UnaryExpressionNode(ExpressionNode):
@@ -61,6 +62,19 @@ class BinaryOperatorNode(Enum):
     MUL = auto()
     DIV = auto()
     MOD = auto()
+    LSHIFT = auto()
+    RSHIFT = auto()
+    BITAND = auto()
+    BITOR = auto()
+    BITXOR = auto()
+    GE = auto()
+    GEQ = auto()
+    LE = auto()
+    LEQ = auto()
+    EQ = auto()
+    NEQ = auto()
+    LAND = auto()
+    LOR = auto()
 
 
 class BinaryExpressionNode(ExpressionNode):
